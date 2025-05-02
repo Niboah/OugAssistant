@@ -1,5 +1,4 @@
-﻿
-namespace OugAssistant.Features.Planning;
+﻿namespace OugAssistant.Features.Planning.Model;
 
 public class Goal
 {

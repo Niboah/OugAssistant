@@ -1,9 +1,9 @@
-﻿
-namespace OugAssistant.Features.Planning;
+﻿namespace OugAssistant.Features.Planning.Model;
 
-internal class Mission: Task
+public class Mission: Task
 {
     public DateTime DeadLine { get; set; }
+    public Mission() { }
     public Mission(string name, string description, TaskPriority priority, DateTime deadline)
     {
         Id = Guid.NewGuid();

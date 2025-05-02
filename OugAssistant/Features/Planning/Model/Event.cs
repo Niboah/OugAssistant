@@ -1,11 +1,10 @@
-﻿
+﻿namespace OugAssistant.Features.Planning.Model;
 
-namespace OugAssistant.Features.Planning;
-
-internal class Event : Task
+public class Event : Task
 {
     public DateTime DateTime { get; set; }
     public string Place {  get; set; }
+    public Event() { }
     public Event (string name,string description,TaskPriority priority,DateTime dateTime, string place)
     {
         Id = Guid.NewGuid();
