@@ -1,0 +1,183 @@
+﻿@model OugAssistant_WEB.Models.Planning.TaskViewModel
+
+@{
+	ViewData["Title"] = "Planning";
+}
+
+<div id="main_container" class="h-100 w-100 row">
+	<div id="calendar_container" class="h-100 col-lg-8 d-none d-md-block">
+	</div>
+	<div id="task_container" class="h-100 col-lg-4 col-sm-12 position-relative ">
+
+		<div id="list_container" class="h-100 overflow-auto m-2 border border-primary">
+			<ul class="list-group">
+				@foreach (var item in Model.TaskList)
+				{
+					<li class="list-group-item">
+						<label>
+							@item.Name
+						</label>
+						<button class="button btn-close float-end"> </button>
+					</li>
+				}
+			</ul>
+		</div>
+		<button id="btnFilterTask" class="button btn-primary rounded-circle position-absolute top-0 end-0" style="height: 2rem; width:2rem">  </button>
+
+		<button id="btnAddTask" class="button btn-primary rounded-circle position-absolute bottom-0 end-0" style="height: 3rem; width:3rem" data-bs-toggle="modal" data-bs-target="#taskModal">
+			+
+		</button>
+
+		<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-fullscreen modal-dialog-scrollable p-3">
+				<div class="modal-content rounded-1">
+
+					<!-- Encabezado del modal -->
+					<div class="modal-header">
+						<h5 class="modal-title" id="myModalLabel">Mi Modal</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+
+					<!-- Cuerpo del modal -->
+					<div class="modal-body d-flex flex-column">
+
+						<div class="row mb-3">
+							<!--Name-->
+							<div class="col">
+								<div class="form-floating">
+									<input type="text" class="form-control" id="inputTaskName" placeholder="Name">
+									<label for="inputTaskName">Task Name</label>
+								</div>
+							</div>
+
+							<!--Goal-->
+							<div class="col-4">
+
+								<div class="form-floating">
+									<select class="form-select form-select-lg" id="floatingSelectGoal" aria-label="Goal" placeholder="Choose">
+										<option selected value=""></option>
+										<option value="New">New</option>
+										@foreach (var goal in Model.GoalList)
+										{
+											<option value="@(goal.Id)">@(goal.Name)</option>
+										}
+									</select>
+									<label for="floatingSelectGoal">Goal</label>
+								</div>
+
+
+							</div>
+
+
+
+
+						</div>
+
+						<!--Type-->
+						<div class="mb-3">
+							<nav>
+								<div class="nav nav-tabs" id="nav-tab" role="tablist">
+									<button class="nav-link active" id="nav-mission-tab" data-bs-toggle="tab" data-bs-target="#nav-mission" type="button" role="tab" aria-controls="nav-mission" aria-selected="true">Mission</button>
+									<button class="nav-link" id="nav-event-tab" data-bs-toggle="tab" data-bs-target="#nav-event" type="button" role="tab" aria-controls="nav-event" aria-selected="false">Event</button>
+									<button class="nav-link" id="nav-routine-tab" data-bs-toggle="tab" data-bs-target="#nav-routine" type="button" role="tab" aria-controls="nav-routine" aria-selected="false">Routine</button>
+								</div>
+							</nav>
+							<div class="tab-content" id="nav-tabContent">
+								<!--Mission-->
+								<div class="tab-pane fade show active" id="nav-mission" role="tabpanel" aria-labelledby="nav-mission-tab" tabindex="0">
+									<div class="row my-3">
+										<div class="form-floating">
+											<input type="datetime-local" class="form-control" id="floatingInputDeadLine" placeholder="Deadline">
+											<label for="floatingInputDeadLine">Deadline</label>
+										</div>
+									</div>
+
+								</div>
+								<!--Event-->
+								<div class="tab-pane fade" id="nav-event" role="tabpanel" aria-labelledby="nav-event-tab" tabindex="0">
+
+									<div class="row my-3">
+
+										<div class="col">
+											<div class="form-floating">
+												<input type="text" class="form-control" id="floatingInputPlace" placeholder="Place">
+												<label for="floatingInputPlace">Place</label>
+											</div>
+										</div>
+										<div class="col-4">
+											<div class="form-floating">
+												<input type="datetime-local" class="form-control" id="floatingInputEventDatetime" placeholder="EventDatetime">
+												<label for="floatingInputEventDatetime">EventDatetime</label>
+											</div>
+										</div>
+
+
+									</div>
+
+								</div>
+								<!--Routine-->
+								<div class="tab-pane fade" id="nav-routine" role="tabpanel" aria-labelledby="nav-routine-tab" tabindex="0">
+
+									<div class="btn-group row w-100 my-3" role="group" aria-label="Basic checkbox toggle button group">
+
+										@for (int i = 0; i < 7; i++)
+										{
+											<div class="col-md col-sm-12 w-100 m-1">
+												<div class="row">
+													<div class="col-md-12 col-6">
+														<input type="checkbox" class="btn-check" id="btncheck@(i)" autocomplete="off" data-bs-toggle="collapse" data-bs-target="#routineDayTime@(i)">
+														<label class="btn btn-outline-primary w-100 h-100" for="btncheck@(i)">Day @(i)</label>
+													</div>
+													<div class="col-md col-6">
+														<div class="form-floating collapse" id="routineDayTime@(i)">
+															<input type="time" class="form-control" id="floatingInputTimeOfDay@(i)" placeholder="Hour @(i)">
+															<label for="floatingInputTimeOfDay@(i)">Hour @(i)</label>
+														</div>
+													</div>
+												</div>
+											</div>
+										}
+
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="row flex-grow-1">
+							<div class="col-1 d-flex flex-column">
+								<label for="inputTaskPriority" class="form-label">Priority</label>
+								<label for="inputTaskPriority" class="form-label">High</label>
+								<div class="h-100 flex-grow-1 d-flex flex-column">
+									<input type="range" class=" flex-grow-1" min="0" max="2" value="0" id="inputTaskPriority" style="writing-mode: vertical-lr; direction: rtl;">
+								</div>
+								<label for="inputTaskPriority" class="form-label">Low</label>
+							</div>
+							<!--Description-->
+							<div class="col">
+								<div class="form-floating h-100">
+									<textarea class="form-control h-100" placeholder="Description" id="inputTaskDescription"></textarea>
+									<label for="inputTaskDescription">Task Description</label>
+								</div>
+							</div>
+						</div>
+
+
+
+					</div>
+
+					<!-- Pie del modal -->
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+						<button type="button" class="btn btn-primary">Guardar Cambios</button>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+
+
+		<script src="~/js/Planning/task.js"></script>
+	</div>
+</div>
+

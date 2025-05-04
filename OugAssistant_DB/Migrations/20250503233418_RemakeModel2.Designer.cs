@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OugAssistant_DB.Features;
 
@@ -11,9 +12,11 @@ using OugAssistant_DB.Features;
 namespace OugAssistant_DB.Migrations
 {
     [DbContext(typeof(Planning))]
-    partial class PlanningModelSnapshot : ModelSnapshot
+    [Migration("20250503233418_RemakeModel2")]
+    partial class RemakeModel2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,11 +25,14 @@ namespace OugAssistant_DB.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugGoal", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.Goal", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Archived")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -38,29 +44,27 @@ namespace OugAssistant_DB.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("OugGoal");
+                    b.ToTable("Goals");
                 });
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugRoutine", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.Routine", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("TimeDay")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<TimeOnly>("TimeDay")
+                        .HasColumnType("time");
 
-                    b.Property<string>("WeekDay")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("WeekDay")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("OugRoutine");
+                    b.ToTable("Routines");
                 });
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugTask", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.Task", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -76,7 +80,6 @@ namespace OugAssistant_DB.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Priority")
@@ -91,18 +94,18 @@ namespace OugAssistant_DB.Migrations
 
                     b.HasIndex("GoalId");
 
-                    b.ToTable("OugTasks");
+                    b.ToTable("Tasks");
 
-                    b.HasDiscriminator<string>("TaskType").HasValue("OugTask");
+                    b.HasDiscriminator<string>("TaskType").HasValue("Task");
 
                     b.UseTphMappingStrategy();
                 });
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugEvent", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.Event", b =>
                 {
-                    b.HasBaseType("OugAssistant.Features.Planning.Model.OugTask");
+                    b.HasBaseType("OugAssistant.Features.Planning.Model.Task");
 
-                    b.Property<DateTime>("EventDateTime")
+                    b.Property<DateTime>("DateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Place")
@@ -112,9 +115,9 @@ namespace OugAssistant_DB.Migrations
                     b.HasDiscriminator().HasValue("Event");
                 });
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugMission", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.Mission", b =>
                 {
-                    b.HasBaseType("OugAssistant.Features.Planning.Model.OugTask");
+                    b.HasBaseType("OugAssistant.Features.Planning.Model.Task");
 
                     b.Property<DateTime>("DeadLine")
                         .HasColumnType("datetime2");
@@ -122,11 +125,11 @@ namespace OugAssistant_DB.Migrations
                     b.HasDiscriminator().HasValue("Mission");
                 });
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugRoutineTask", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.RoutineTask", b =>
                 {
-                    b.HasBaseType("OugAssistant.Features.Planning.Model.OugTask");
+                    b.HasBaseType("OugAssistant.Features.Planning.Model.Task");
 
-                    b.Property<DateTime>("RoutineDateTime")
+                    b.Property<DateTime>("DoDateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<Guid>("RoutineId")
@@ -137,9 +140,9 @@ namespace OugAssistant_DB.Migrations
                     b.HasDiscriminator().HasValue("RoutineTask");
                 });
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugTask", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.Task", b =>
                 {
-                    b.HasOne("OugAssistant.Features.Planning.Model.OugGoal", "Goal")
+                    b.HasOne("OugAssistant.Features.Planning.Model.Goal", "Goal")
                         .WithMany("Tasks")
                         .HasForeignKey("GoalId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -148,9 +151,9 @@ namespace OugAssistant_DB.Migrations
                     b.Navigation("Goal");
                 });
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugRoutineTask", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.RoutineTask", b =>
                 {
-                    b.HasOne("OugAssistant.Features.Planning.Model.OugRoutine", "Routine")
+                    b.HasOne("OugAssistant.Features.Planning.Model.Routine", "Routine")
                         .WithMany()
                         .HasForeignKey("RoutineId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -159,7 +162,7 @@ namespace OugAssistant_DB.Migrations
                     b.Navigation("Routine");
                 });
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugGoal", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.Goal", b =>
                 {
                     b.Navigation("Tasks");
                 });

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OugAssistant_DB.Features;
 
@@ -11,9 +12,11 @@ using OugAssistant_DB.Features;
 namespace OugAssistant_DB.Migrations
 {
     [DbContext(typeof(Planning))]
-    partial class PlanningModelSnapshot : ModelSnapshot
+    [Migration("20250504105743_RemakeModel3")]
+    partial class RemakeModel3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -47,13 +50,11 @@ namespace OugAssistant_DB.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("TimeDay")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<TimeOnly>("TimeDay")
+                        .HasColumnType("time");
 
-                    b.Property<string>("WeekDay")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("WeekDay")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -122,7 +123,7 @@ namespace OugAssistant_DB.Migrations
                     b.HasDiscriminator().HasValue("Mission");
                 });
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugRoutineTask", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.RoutineTask", b =>
                 {
                     b.HasBaseType("OugAssistant.Features.Planning.Model.OugTask");
 
@@ -148,7 +149,7 @@ namespace OugAssistant_DB.Migrations
                     b.Navigation("Goal");
                 });
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugRoutineTask", b =>
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.RoutineTask", b =>
                 {
                     b.HasOne("OugAssistant.Features.Planning.Model.OugRoutine", "Routine")
                         .WithMany()
