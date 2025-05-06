@@ -3,13 +3,19 @@
 
 // Write your JavaScript code.
 
-function ajaxCall(url, method = 'GET', body) {
-    return fetch(url, {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer your-token-here'
-        },
-        body: JSON.stringify(body)
-    });
+function ajaxCall(url, method = 'GET', body = null) {
+    return fetch(url,
+        {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer your-token-here'
+            },
+            body: body ? JSON.stringify(body) : null
+        })
+        .then(response => {
+            if (!response.ok)  throw response;
+            else  return response.json();
+            });
+
 }

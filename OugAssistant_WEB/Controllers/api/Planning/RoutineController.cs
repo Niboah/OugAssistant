@@ -21,8 +21,8 @@ public class RoutineController : ControllerBase
 
     public class RoutineDto
     {
-        public required DayOfWeek WeekDay { get; set; }
-        public required TimeSpan TimeDay { get; set; }
+        public required List<DayOfWeek> WeekDay { get; set; }
+        public required List<TimeSpan> TimeDay { get; set; }
     }
 
     // GET: api/Routine

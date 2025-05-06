@@ -9,13 +9,10 @@ public class OugRoutine
     public List<DayOfWeek> WeekDay { get; }
     public List<TimeSpan> TimeDay { get; }
     public OugRoutine() { }
-    public OugRoutine(DayOfWeek weekDay, TimeSpan timeDay)
+    public OugRoutine(List<DayOfWeek> weekDay, List<TimeSpan> timeDay)
     {
-        WeekDay = new List<DayOfWeek>();
-        TimeDay = new List<TimeSpan>();
-
-        WeekDay.Add(weekDay);
-        TimeDay.Add(timeDay);
+        WeekDay = weekDay;
+        TimeDay = timeDay;
     }
 
     public void Add(DayOfWeek weekDay, TimeSpan timeDay)

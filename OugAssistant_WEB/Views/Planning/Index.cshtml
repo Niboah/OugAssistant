@@ -10,7 +10,7 @@
 	<div id="task_container" class="h-100 col-lg-4 col-sm-12 position-relative ">
 
 		<div id="list_container" class="h-100 overflow-auto m-2 border border-primary">
-			<ul class="list-group">
+			<ul id="taskList" class="list-group">
 				@foreach (var item in Model.TaskList)
 				{
 					<li class="list-group-item">
@@ -28,13 +28,13 @@
 			+
 		</button>
 
-		<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
 			<div class="modal-dialog modal-fullscreen modal-dialog-scrollable p-3">
 				<div class="modal-content rounded-1">
 
 					<!-- Encabezado del modal -->
 					<div class="modal-header">
-						<h5 class="modal-title" id="myModalLabel">Mi Modal</h5>
+						<h5 class="modal-title" id="taskModalLabel">Mi Modal</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 
@@ -54,7 +54,7 @@
 							<div class="col-4">
 
 								<div class="form-floating">
-									<select class="form-select form-select-lg" id="floatingSelectGoal" aria-label="Goal" placeholder="Choose">
+									<select class="form-select form-select-lg" id="selectTaskGoal" aria-label="Goal" placeholder="Choose">
 										<option selected value=""></option>
 										<option value="New">New</option>
 										@foreach (var goal in Model.GoalList)
@@ -64,22 +64,16 @@
 									</select>
 									<label for="floatingSelectGoal">Goal</label>
 								</div>
-
-
 							</div>
-
-
-
-
 						</div>
 
 						<!--Type-->
 						<div class="mb-3">
 							<nav>
 								<div class="nav nav-tabs" id="nav-tab" role="tablist">
-									<button class="nav-link active" id="nav-mission-tab" data-bs-toggle="tab" data-bs-target="#nav-mission" type="button" role="tab" aria-controls="nav-mission" aria-selected="true">Mission</button>
-									<button class="nav-link" id="nav-event-tab" data-bs-toggle="tab" data-bs-target="#nav-event" type="button" role="tab" aria-controls="nav-event" aria-selected="false">Event</button>
-									<button class="nav-link" id="nav-routine-tab" data-bs-toggle="tab" data-bs-target="#nav-routine" type="button" role="tab" aria-controls="nav-routine" aria-selected="false">Routine</button>
+									<button class="taskType nav-link active" id="nav-mission-tab" data-tasktype="mission" data-bs-toggle="tab" data-bs-target="#nav-mission" type="button" role="tab" aria-controls="nav-mission" aria-selected="true">Mission</button>
+									<button class="taskType nav-link" id="nav-event-tab" data-tasktype="event" data-bs-toggle="tab" data-bs-target="#nav-event" type="button" role="tab" aria-controls="nav-event" aria-selected="false">Event</button>
+									<button class="taskType nav-link" id="nav-routine-tab" data-tasktype="routine" data-bs-toggle="tab" data-bs-target="#nav-routine" type="button" role="tab" aria-controls="nav-routine" aria-selected="false">Routine</button>
 								</div>
 							</nav>
 							<div class="tab-content" id="nav-tabContent">
@@ -87,7 +81,7 @@
 								<div class="tab-pane fade show active" id="nav-mission" role="tabpanel" aria-labelledby="nav-mission-tab" tabindex="0">
 									<div class="row my-3">
 										<div class="form-floating">
-											<input type="datetime-local" class="form-control" id="floatingInputDeadLine" placeholder="Deadline">
+											<input type="datetime-local" class="form-control" id="inputTaskMissionDeadLine" placeholder="Deadline">
 											<label for="floatingInputDeadLine">Deadline</label>
 										</div>
 									</div>
@@ -100,13 +94,13 @@
 
 										<div class="col">
 											<div class="form-floating">
-												<input type="text" class="form-control" id="floatingInputPlace" placeholder="Place">
+												<input type="text" class="form-control" id="inputTaskEventPlace" placeholder="Place">
 												<label for="floatingInputPlace">Place</label>
 											</div>
 										</div>
 										<div class="col-4">
 											<div class="form-floating">
-												<input type="datetime-local" class="form-control" id="floatingInputEventDatetime" placeholder="EventDatetime">
+												<input type="datetime-local" class="form-control" id="inputTaskEventDateTime" placeholder="EventDatetime">
 												<label for="floatingInputEventDatetime">EventDatetime</label>
 											</div>
 										</div>
@@ -125,13 +119,13 @@
 											<div class="col-md col-sm-12 w-100 m-1">
 												<div class="row">
 													<div class="col-md-12 col-6">
-														<input type="checkbox" class="btn-check" id="btncheck@(i)" autocomplete="off" data-bs-toggle="collapse" data-bs-target="#routineDayTime@(i)">
-														<label class="btn btn-outline-primary w-100 h-100" for="btncheck@(i)">Day @(i)</label>
+														<input type="checkbox" class="taskRoutineDay btn-check" id="inputTaskRoutineDay@(i)" data-weekday="@(i)" autocomplete="off" data-bs-toggle="collapse" data-bs-target="#routineDayTime@(i)">
+														<label class="btn btn-outline-primary w-100 h-100" for="inputTaskRoutineDay@(i)">Day @(i)</label>
 													</div>
 													<div class="col-md col-6">
 														<div class="form-floating collapse" id="routineDayTime@(i)">
-															<input type="time" class="form-control" id="floatingInputTimeOfDay@(i)" placeholder="Hour @(i)">
-															<label for="floatingInputTimeOfDay@(i)">Hour @(i)</label>
+															<input type="time" class="form-control taskRoutineTimeOfDay" id="inputTaskRoutineTimeOfDay@(i)" placeholder="Hour @(i)">
+															<label for="inputTaskRoutineTimeOfDay@(i)">Hour @(i)</label>
 														</div>
 													</div>
 												</div>
@@ -148,7 +142,14 @@
 								<label for="inputTaskPriority" class="form-label">Priority</label>
 								<label for="inputTaskPriority" class="form-label">High</label>
 								<div class="h-100 flex-grow-1 d-flex flex-column">
-									<input type="range" class=" flex-grow-1" min="0" max="2" value="0" id="inputTaskPriority" style="writing-mode: vertical-lr; direction: rtl;">
+									<input id="inputTaskPriority" type="range" class=" flex-grow-1" min="0" max="2" value="0" style="writing-mode: vertical-lr;
+									  direction: rtl;
+									  width: 100%;
+									  appearance: none;
+									  background: linear-gradient(to bottom,#e30000, #f9f9f9);
+									  border-radius: 5px;
+									  outline: none;
+									}">
 								</div>
 								<label for="inputTaskPriority" class="form-label">Low</label>
 							</div>
@@ -168,14 +169,48 @@
 					<!-- Pie del modal -->
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-						<button type="button" class="btn btn-primary">Guardar Cambios</button>
+						<button id="btnNewTask" type="button" class="btn btn-primary">Guardar Cambios</button>
 					</div>
 
 				</div>
 			</div>
 		</div>
 
+		<div class="modal fade" id="goalModal" tabindex="-1" aria-labelledby="goalModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-scrollable p-3">
+				<div class="modal-content rounded-1">
 
+					<!-- Encabezado del modal -->
+					<div class="modal-header">
+						<h5 class="modal-title" id="goalModalLabel">Mi Modal</h5>
+						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+					</div>
+
+					<!-- Cuerpo del modal -->
+					<div class="modal-body d-flex flex-column">
+
+						<!--Name-->
+						<div class="form-floating mb-3">
+							<input type="text" class="form-control" id="inputGoalName" placeholder="Name">
+							<label for="inputGoalName">Goal Name</label>
+						</div>
+						<!--Description-->
+						<div class="form-floating mb-3">
+							<input type="text" class="form-control" id="inputGoalDescription" placeholder="Description">
+							<label for="inputGoalDescription">Goal Description</label>
+						</div>
+
+					</div>
+
+					<!-- Pie del modal -->
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+						<button id="btnNewGoal" type="button" class="btn btn-primary">Guardar Cambios</button>
+					</div>
+
+				</div>
+			</div>
+		</div>
 
 		<script src="~/js/Planning/task.js"></script>
 	</div>
