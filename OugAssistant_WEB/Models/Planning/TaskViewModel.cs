@@ -7,7 +7,7 @@ namespace OugAssistant_WEB.Models.Planning
     {
         public List<OugTask> TaskList { get; set; }
         public List<OugGoal> GoalList { get; set; }
-        public List<OugRoutine> RoutineList { get; set; }
+        public HashSet<TimeOnly>[] WeekTimes { get; set; }
     }
 }
 

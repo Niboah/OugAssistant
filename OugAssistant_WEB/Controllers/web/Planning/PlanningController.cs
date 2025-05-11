@@ -19,6 +19,7 @@ public class PlanningController : Controller
         TaskViewModel taskViewModel = new TaskViewModel();
         taskViewModel.TaskList = _context.OugTasks.ToList();
         taskViewModel.GoalList = _context.OugGoal.ToList();
+       
         return View(taskViewModel);
     }
 }

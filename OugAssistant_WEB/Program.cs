@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using static OugAssistant_DB.Features.Planning;
 
 namespace OugAssistant_WEB;
 
@@ -8,7 +9,12 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        builder.Services.AddControllers(); // Add API controllers
+        builder.Services.AddControllers() // Add API controllers
+                    .AddJsonOptions(options =>
+                     {
+                         options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
+                     });
+
         builder.Services.AddEndpointsApiExplorer();  // API documentation (Swagger)
         builder.Services.AddSwaggerGen(); // Enable Swagger UI for API documentation
 
@@ -16,6 +22,9 @@ public class Program
 
         builder.Services.AddDbContext<OugAssistant_DB.Features.Planning>(options =>
             options.UseSqlServer(builder.Configuration.GetConnectionString("PlanningConnection") ?? throw new InvalidOperationException("Connection string 'PlanningConnection' not found.")));
+
+
+            
 
         var app = builder.Build();
 

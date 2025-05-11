@@ -13,11 +13,13 @@
 			<ul id="taskList" class="list-group">
 				@foreach (var item in Model.TaskList)
 				{
-					<li class="list-group-item">
-						<label>
-							@item.Name
-						</label>
-						<button class="button btn-close float-end"> </button>
+					<li class="list-group-item  d-flex" >
+						<div class="OugTask flex-grow-1" id="@(item.Id)">
+							<label>
+								@item.Name
+							</label>
+						</div>
+						<button class="button btn-close float-end deleteTask"> </button>
 					</li>
 				}
 			</ul>
@@ -34,7 +36,7 @@
 
 					<!-- Encabezado del modal -->
 					<div class="modal-header">
-						<h5 class="modal-title" id="taskModalLabel">Mi Modal</h5>
+						<h5 class="modal-title" id="taskModalLabel">Task</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 
@@ -78,7 +80,7 @@
 							</nav>
 							<div class="tab-content" id="nav-tabContent">
 								<!--Mission-->
-								<div class="tab-pane fade show active" id="nav-mission" role="tabpanel" aria-labelledby="nav-mission-tab" tabindex="0">
+								<div class="tab-pane fade show active taskTypeContent" id="nav-mission" role="tabpanel" aria-labelledby="nav-mission-tab" tabindex="0">
 									<div class="row my-3">
 										<div class="form-floating">
 											<input type="datetime-local" class="form-control" id="inputTaskMissionDeadLine" placeholder="Deadline">
@@ -88,7 +90,7 @@
 
 								</div>
 								<!--Event-->
-								<div class="tab-pane fade" id="nav-event" role="tabpanel" aria-labelledby="nav-event-tab" tabindex="0">
+								<div class="tab-pane fade taskTypeContent" id="nav-event" role="tabpanel" aria-labelledby="nav-event-tab" tabindex="0">
 
 									<div class="row my-3">
 
@@ -110,7 +112,7 @@
 
 								</div>
 								<!--Routine-->
-								<div class="tab-pane fade" id="nav-routine" role="tabpanel" aria-labelledby="nav-routine-tab" tabindex="0">
+								<div class="tab-pane fade taskTypeContent" id="nav-routine" role="tabpanel" aria-labelledby="nav-routine-tab" tabindex="0">
 
 									<div class="btn-group row w-100 my-3" role="group" aria-label="Basic checkbox toggle button group">
 
@@ -119,15 +121,22 @@
 											<div class="col-md col-sm-12 w-100 m-1">
 												<div class="row">
 													<div class="col-md-12 col-6">
-														<input type="checkbox" class="taskRoutineDay btn-check" id="inputTaskRoutineDay@(i)" data-weekday="@(i)" autocomplete="off" data-bs-toggle="collapse" data-bs-target="#routineDayTime@(i)">
+														<input type="checkbox" class="taskRoutineDay btn-check" id="inputTaskRoutineDay@(i)" data-weekday="@(i)" autocomplete="off" data-bs-toggle="collapse" data-bs-target="#routineDayTimeListContainer@(i)" >
 														<label class="btn btn-outline-primary w-100 h-100" for="inputTaskRoutineDay@(i)">Day @(i)</label>
 													</div>
-													<div class="col-md col-6">
-														<div class="form-floating collapse" id="routineDayTime@(i)">
-															<input type="time" class="form-control taskRoutineTimeOfDay" id="inputTaskRoutineTimeOfDay@(i)" placeholder="Hour @(i)">
-															<label for="inputTaskRoutineTimeOfDay@(i)">Hour @(i)</label>
+													<div class="col-md col-6 collapse" id="routineDayTimeListContainer@(i)">
+														<div id="routineDayTimeList@(i)">
+															<div class="row w-100 m-0 position-relative" id="routineDayTime@(i)0" data-weekday="@(i)" data-hour="0">
+																<div class="form-floating col p-0 ">
+																	<input type="time" class="form-control taskRoutineTimeOfDay" id="inputTaskRoutineTimeOfDay@(i)0" placeholder="Hour @(i)0">
+																	<label for="inputTaskRoutineTimeOfDay@(i)0">Hour @(i)0</label>
+																</div>
+																<button class="col-1 removeRoutineHour btn btn-close position-absolute top-0 end-0" data-weekday="@(i)" data-hour="0"></button>
+															</div>
 														</div>
+														<button class="addRoutineHour w-100 btn btn-light" data-weekday="@(i)">+</button>
 													</div>
+													
 												</div>
 											</div>
 										}
@@ -182,7 +191,7 @@
 
 					<!-- Encabezado del modal -->
 					<div class="modal-header">
-						<h5 class="modal-title" id="goalModalLabel">Mi Modal</h5>
+						<h5 class="modal-title" id="goalModalLabel">Goal</h5>
 						<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 					</div>
 

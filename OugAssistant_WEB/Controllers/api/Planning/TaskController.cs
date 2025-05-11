@@ -41,7 +41,7 @@ public class TaskController : ControllerBase
 
     public class OugRoutineDto : OugTaskDto
     {
-        public required Guid RoutineId { get; set; }
+        public required HashSet<TimeOnly>[] WeekTimes { get; set; }
     }
 
     // GET: api/Task
@@ -126,19 +126,14 @@ public class TaskController : ControllerBase
         {
             throw new NullReferenceException();
         }
-        OugRoutine routine = await _context.OugRoutine.FindAsync(dto.RoutineId);
-        if (routine == null)
-        {
-            throw new NullReferenceException();
-        }
-        OugRoutineTask task = new OugRoutineTask(
+
+        OugRoutine task = new OugRoutine(
                     name: dto.Name,
                     description: dto.Description,
                     priority: (TaskPriority)dto.Priority,
                     goalId: goal.Id,
                     goal: goal,
-                    routineId: routine.Id,
-                    routine : routine
+                    weekTimes: dto.WeekTimes
                 );
 
         _context.OugTasks.Add(task);

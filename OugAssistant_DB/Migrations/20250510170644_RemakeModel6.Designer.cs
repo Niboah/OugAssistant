@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OugAssistant_DB.Features;
 
@@ -11,9 +12,11 @@ using OugAssistant_DB.Features;
 namespace OugAssistant_DB.Migrations
 {
     [DbContext(typeof(Planning))]
-    partial class PlanningModelSnapshot : ModelSnapshot
+    [Migration("20250510170644_RemakeModel6")]
+    partial class RemakeModel6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

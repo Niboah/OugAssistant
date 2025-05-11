@@ -16,6 +16,5 @@ function ajaxCall(url, method = 'GET', body = null) {
         .then(response => {
             if (!response.ok)  throw response;
             else  return response.json();
-            });
-
+        });
 }
