@@ -1,0 +1,54 @@
+﻿.container {
+    position: relative;
+    height: 100%;
+    padding: 1rem 1.5rem 0 1.5rem;
+    box-sizing: border-box;
+}
+
+.wrapper {
+    height: 100%;
+    overflow: auto;
+    border: solid 1px red;
+}
+
+ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.add-button,
+.filter-button {
+    position: absolute;
+    height: 3rem;
+    width: 3rem;
+    border-radius: 1rem;
+}
+
+.add-button {
+    bottom: 0;
+    right: 0;
+}
+
+.filter-button {
+    top: 0;
+    right: 0;
+}
+
+li {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border: solid 1px red;
+}
+
+.remove-btn {
+    border: none;
+    width: 1.5em;
+    height: 1.5em;
+    background: none;
+    cursor: pointer;
+    font-weight: bold;
+    color: red;
+}
