@@ -4,7 +4,7 @@
 // Write your JavaScript code.
 
 function ajaxCall(url, method = 'GET', body = null) {
-    return fetch(url,
+    return fetch('OugAssistant'+url,
         {
             method: method,
             headers: {

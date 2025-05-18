@@ -1,7 +1,9 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OugAssistant.Features.Planning.Model;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 namespace OugAssistant_WEB.Controllers.api.Planning;
@@ -55,7 +57,25 @@ public class GoalController : ControllerBase
         _context.OugGoal.Add(goal);
         await _context.SaveChangesAsync();
 
-        return CreatedAtAction("GetGoal", new { id = goal.Id }, goal);
+        return await GetGoal(goal.Id);
+    }
+
+
+    // PATCH: api/Goal/id
+    [HttpPatch("{id}")]
+    public async Task<ActionResult<OugGoal>> UpdateGoal(Guid id,[FromBody] JsonElement updates)
+    {
+
+        var goal = _context.OugGoal.FirstOrDefault(g => g.Id == id);
+        if (goal == null) return NotFound();
+
+        if (updates.TryGetProperty("email", out var name))
+            goal.Name = name.GetString();
+
+        if (updates.TryGetProperty("name", out var description))
+            goal.Description = description.GetString();
+
+        return Ok(goal);
     }
 
     // DELETE: api/Goal/id

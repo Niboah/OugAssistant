@@ -8,6 +8,8 @@ namespace OugAssistant_WEB.Models.Planning
         public List<OugTask> TaskList { get; set; }
         public List<OugGoal> GoalList { get; set; }
         public HashSet<TimeOnly>[] WeekTimes { get; set; }
+
+        public TaskViewModel() { }
     }
 }
 

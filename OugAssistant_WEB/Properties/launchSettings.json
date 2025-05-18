@@ -4,7 +4,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:26912",
+      "applicationUrl": "http://localhost:26912/OugAssistant",
       "sslPort": 44385
     }
   },

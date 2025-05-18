@@ -7,16 +7,14 @@ function selectTaskGoalOnChange(event) {
         goalModal.show();
     }
 }
-
-
-function addRoutineHour(event, day = -1,value="") {
+function addRoutineHour(event, day = -1, value = "") {
     if (day == -1)
         day = event.target.dataset.weekday;
 
     let list = document.getElementById("routineDayTimeList" + day);
     let newhour = 1;
     if (list.lastElementChild)
-        newhour =  parseInt(list.lastElementChild.dataset.hour) + 1;
+        newhour = parseInt(list.lastElementChild.dataset.hour) + 1;
 
     let aux = `
 		<div class="row w-100 m-0 position-relative" id="routineDayTime${day}${newhour}" data-weekday="${day}" data-hour="${newhour}">
@@ -32,24 +30,24 @@ function addRoutineHour(event, day = -1,value="") {
 
     document.querySelectorAll('.removeRoutineHour').forEach(el => { el.onclick = removeRoutineHour });
 }
-
-
 function removeRoutineHour(event) {
     let parent = event.target.parentElement;
     parent.remove();
 }
-
 function createGoal(name, description) {
     let body = {
         "name": name,
         "description": description
     }
-    return ajaxCall( '/api/Goal', 'POST', body);
+    return ajaxCall('/api/Goal', 'POST', body);
 }
-
 function readGoal(id) {
     if (id) return ajaxCall('/api/Goal/' + id, 'GET');
     return ajaxCall('/api/Goal', 'GET');
+}
+
+function updateGoal(id) {
+    if (id) return ajaxCall('/api/Goal/' + id, 'PATCH');
 }
 
 function createMission(name, description, priority, goalId, deadtime) {
@@ -61,6 +59,21 @@ function createMission(name, description, priority, goalId, deadtime) {
         "deadLine": deadtime
     }
     return ajaxCall('/api/Task/Mission', 'POST', body)
+        .then(result => {
+            alert(JSON.stringify(result));
+            return result.id;
+        });
+}
+
+function updateMission(id, name, description, priority, goalId, deadtime) {
+    let body = {
+        "name": name,
+        "description": description,
+        "priority": priority,
+        "goalId": goalId,
+        "deadLine": deadtime
+    }
+    return ajaxCall('/api/Task/Mission/' + id, 'PATCH', body)
         .then(result => {
             alert(JSON.stringify(result));
             return result.id;
@@ -83,6 +96,22 @@ function createEvent(name, description, priority, goalId, eventDateTime, place) 
         });
 }
 
+function updateEvent(id, name, description, priority, goalId, eventDateTime, place) {
+    let body = {
+        "name": name,
+        "description": description,
+        "priority": priority,
+        "goalId": goalId,
+        "eventDateTime": eventDateTime,
+        "place": place
+    }
+    return ajaxCall('/api/Task/Event/' + id, 'PATCH', body)
+        .then(result => {
+            alert(JSON.stringify(result));
+            return result.id;
+        });
+}
+
 function createRoutine(name, description, priority, goalId, weekTimes) {
     let body = {
         "name": name,
@@ -98,8 +127,23 @@ function createRoutine(name, description, priority, goalId, weekTimes) {
         });
 }
 
+function updateRoutine(id, name, description, priority, goalId, weekTimes) {
+    let body = {
+        "name": name,
+        "description": description,
+        "priority": priority,
+        "goalId": goalId,
+        "weekTimes": weekTimes
+    }
+    return ajaxCall('/api/Task/Routine/' + id, 'PATCH', body)
+        .then(result => {
+            alert(JSON.stringify(result));
+            return result.id;
+        });
+}
+
 function readTask(id) {
-    if (id)  return ajaxCall('/api/Task/'+id, 'GET');
+    if (id) return ajaxCall('/api/Task/' + id, 'GET');
     return ajaxCall('/api/Task', 'GET');
 }
 
@@ -107,28 +151,34 @@ function deleteTask(id) {
     if (id) return ajaxCall('/api/Task/' + id, 'DELETE');
 }
 
-
 function newGoal() {
     let name = document.getElementById('inputGoalName').value;
     let description = document.getElementById('inputGoalDescription').value;
     createGoal(name, description)
-        .then(readGoal)
-        .then(goals => {
+        .then(goal => {
             const select = document.getElementById('selectTaskGoal');
             // Clear existing options, add default options
             select.innerHTML = `<option value=""></option>
 								<option value="New">New</option>`;
 
-            goals.forEach(value => {
-                const option = document.createElement('option');
-                option.value = value.id;
-                option.text = value.name;
-                option.selected = name == value.name;
-                select.appendChild(option);
-            });
+            const option = document.createElement('option');
+            option.value = goal.id;
+            option.text = goal.name;
+            option.selected = name == goal.name;
+            select.appendChild(option);
 
+            let goalModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('goalModal'));
             goalModal.hide();
         })
+}
+
+async function saveTask() {
+    if (document.getElementById('taskModal').dataset.id) {
+        await updateTask(document.getElementById('taskModal').dataset.id);
+    } else {
+        await newTask();
+    }
+
 }
 
 async function newTask() {
@@ -192,60 +242,116 @@ async function newTask() {
     taskModal.hide();
 }
 
-async function openTask(event) {
-    let id = event.target.id;
+async function updateTask(id) {
+    let name = document.getElementById('inputTaskName').value;
+    let description = document.getElementById('inputTaskDescription').value;
+    let priority = Number(document.getElementById('inputTaskPriority').value);
+    let goalId = document.getElementById('selectTaskGoal').value;
 
-    let task = await readTask(id);
+    let type = document.querySelector('.taskType.active').dataset.tasktype;
 
-    document.getElementById('inputTaskName').value = task.name;
-    document.getElementById('inputTaskDescription').value = task.description;
-    document.getElementById('inputTaskPriority').value = task.priority;
-    document.getElementById('selectTaskGoal').value = task.goalId;
+    let eventDateTime = document.getElementById('inputTaskEventDateTime').value;
+    let place = document.getElementById('inputTaskEventPlace').value;
 
-    document.querySelectorAll('.taskType').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.taskTypeContent').forEach(el => el.classList.remove('active', 'show'));
+    let deadtime = document.getElementById('inputTaskMissionDeadLine').value;
 
-    if (task.eventDateTime) {
-        document.getElementById('inputTaskEventDateTime').value = task.eventDateTime;
-        document.getElementById('inputTaskEventPlace').value = task.place;
+    let newTaskId;
 
-        const triggerEl = document.getElementById('nav-event-tab');
-        const tab = new bootstrap.Tab(triggerEl);
-        tab.show();
+    if (type == 'mission') {
+        newTaskId = await updateMission(id, name, description, priority, goalId, deadtime)
+    } else if (type == 'event') {
+        newTaskId = await updateEvent(id, name, description, priority, goalId, eventDateTime, place)
+    } else if (type == 'routine') {
 
-    } else if (task.deadLine) {
-        document.getElementById('inputTaskMissionDeadLine').value = task.deadLine;
-
-        const triggerEl = document.getElementById('nav-mission-tab');
-        const tab = new bootstrap.Tab(triggerEl);
-        tab.show();
-    } else if (task.weekTimes) {
-
-        task.weekTimes.forEach((value, i) => {
-            if (value.length > 0) {
-                document.getElementById('inputTaskRoutineDay' + i).checked = true;
-                let collapseElement = document.getElementById('routineDayTimeListContainer'+i);
-                const bsCollapse = new bootstrap.Collapse(collapseElement, {
-                    toggle: false
+        let weekTimes = document.querySelectorAll('.taskRoutineDay');
+        weekTimes = Array.from(weekTimes).map(el => {
+            if (el.checked) {
+                let weekday = el.dataset.weekday;
+                let hourlist = document.getElementById('routineDayTimeList' + weekday);
+                hourlist = Array.from(hourlist.children).map(h => {
+                    let hour = h.dataset.hour;
+                    let input = document.getElementById("inputTaskRoutineTimeOfDay" + weekday + hour);
+                    return input.value;
                 });
-                bsCollapse.toggle();
+                console.log(hourlist);
+                return hourlist
+            } else {
+                return [];
             }
-        });
-        
-        for (let i = 0; i < task.weekTimes.length; i++) {
-            let firstHourEl = document.getElementById('inputTaskRoutineTimeOfDay' + i + 0);
-            firstHourEl.value = task.weekTimes[i][0];
-            let list = document.getElementById('routineDayTimeList'+i)
-            for (let j = 1; j < task.weekTimes[i].length;j++){
-                addRoutineHour(null, i, task.weekTimes[i][j])
-            }
+
         }
-        const triggerEl = document.getElementById('nav-routine-tab');
-        const tab = new bootstrap.Tab(triggerEl);
-        tab.show();
-    }  
+        );
+        newTaskId = await updateRoutine(id, name, description, priority, goalId, weekTimes)
+    } else {
+        console.log("error")
+    }
+
     let taskModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('taskModal'));
-    taskModal.show();
+    taskModal.hide();
+}
+
+async function openTask(event) {
+    try {
+
+
+        let id = event.target.id;
+        if (!id) return;
+        
+        let task = await readTask(id);
+
+        document.getElementById('inputTaskName').value = task.name;
+        document.getElementById('inputTaskDescription').value = task.description;
+        document.getElementById('inputTaskPriority').value = task.priority;
+        document.getElementById('selectTaskGoal').value = task.goalId;
+
+        document.querySelectorAll('.taskType').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.taskTypeContent').forEach(el => el.classList.remove('active', 'show'));
+
+        if (task.eventDateTime) {
+            document.getElementById('inputTaskEventDateTime').value = task.eventDateTime;
+            document.getElementById('inputTaskEventPlace').value = task.place;
+
+            const triggerEl = document.getElementById('nav-event-tab');
+            const tab = new bootstrap.Tab(triggerEl);
+            tab.show();
+
+        } else if (task.deadLine) {
+            document.getElementById('inputTaskMissionDeadLine').value = task.deadLine;
+
+            const triggerEl = document.getElementById('nav-mission-tab');
+            const tab = new bootstrap.Tab(triggerEl);
+            tab.show();
+        } else if (task.weekTimes) {
+
+            task.weekTimes.forEach((value, i) => {
+                if (value.length > 0) {
+                    document.getElementById('inputTaskRoutineDay' + i).checked = true;
+                    let collapseElement = document.getElementById('routineDayTimeListContainer' + i);
+                    const bsCollapse = new bootstrap.Collapse(collapseElement, {
+                        toggle: false
+                    });
+                    bsCollapse.toggle();
+                }
+            });
+
+            for (let i = 0; i < task.weekTimes.length; i++) {
+                let firstHourEl = document.getElementById('inputTaskRoutineTimeOfDay' + i + 0);
+                firstHourEl.value = task.weekTimes[i][0];
+                let list = document.getElementById('routineDayTimeList' + i)
+                for (let j = 1; j < task.weekTimes[i].length; j++) {
+                    addRoutineHour(null, i, task.weekTimes[i][j])
+                }
+            }
+            const triggerEl = document.getElementById('nav-routine-tab');
+            const tab = new bootstrap.Tab(triggerEl);
+            tab.show();
+        }
+        let taskModal = bootstrap.Modal.getOrCreateInstance(document.getElementById('taskModal'));
+        document.getElementById('taskModal').dataset.id = id;
+        taskModal.show();
+    } catch (ex) {
+        Alert(ex);
+    }
 }
 
 async function eliminateTask(event) {
@@ -254,7 +360,7 @@ async function eliminateTask(event) {
 }
 
 (() => {
-    document.getElementById('btnNewTask').onclick = newTask;
+    document.getElementById('btnNewTask').onclick = saveTask;
     document.getElementById('btnNewGoal').onclick = newGoal;
     document.getElementById('selectTaskGoal').onchange = selectTaskGoalOnChange;
     document.querySelectorAll('.OugTask').forEach(el => { el.onclick = openTask });
