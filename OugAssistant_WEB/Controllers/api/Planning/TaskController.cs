@@ -199,7 +199,7 @@ public class TaskController : ControllerBase
     #endregion
 
     #region DELETE
-    [Route("Task/{id}")]
+    [Route("{id}")]
     [HttpDelete]
     public async Task<IActionResult> DeleteTask(Guid id)
     {

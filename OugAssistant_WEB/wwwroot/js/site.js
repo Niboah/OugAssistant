@@ -14,7 +14,9 @@ function ajaxCall(url, method = 'GET', body = null) {
             body: body ? JSON.stringify(body) : null
         })
         .then(response => {
-            if (!response.ok)  throw response;
-            else  return response.json();
+            if (!response.ok) throw response;
+            else if (response.status = '204') return true;
+            else if (response.bodyUsed) return response.json();
+            else return response;
         });
 }

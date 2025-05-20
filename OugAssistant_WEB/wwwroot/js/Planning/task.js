@@ -172,6 +172,13 @@ function newGoal() {
         })
 }
 
+
+function refresh() {
+    readTask()
+
+}
+
+
 async function saveTask() {
     if (document.getElementById('taskModal').dataset.id) {
         await updateTask(document.getElementById('taskModal').dataset.id);
@@ -292,9 +299,7 @@ async function updateTask(id) {
 
 async function openTask(event) {
     try {
-
-
-        let id = event.target.id;
+        let id = event.target.dataset.taskid;
         if (!id) return;
         
         let task = await readTask(id);
@@ -355,8 +360,16 @@ async function openTask(event) {
 }
 
 async function eliminateTask(event) {
-    let id = event.target.parentElement.id;
-    deleteTask(id);
+    
+    event.stopPropagation();
+    let id = event.target.dataset.taskid;
+    deleteTask(id)
+        .then(result => {
+            
+        })
+        .catch(ex => {
+            console.error(ex);
+        });
 }
 
 (() => {
