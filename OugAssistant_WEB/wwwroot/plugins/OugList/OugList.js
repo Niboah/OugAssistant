@@ -1,9 +1,7 @@
-﻿
-
-class OugList extends HTMLElement {
+﻿class OugList extends HTMLElement {
     constructor() {
         super();
-
+        this.itemid = 0;
         this.data = [];
         this.filteredData = [];
 
@@ -13,25 +11,68 @@ class OugList extends HTMLElement {
         const template = document.createElement('template');
         template.innerHTML = `
         <style>
-            .container {
+            .ouglist-container {
                 position: relative;
                 height: 100%;
-                padding: 1rem 1.5rem 0 1.5rem;
+                padding: 0 1.5rem;
                 box-sizing: border-box;
             }
-            .wrapper {
+
+            .ouglist-wrapper {
                 height: 100%;
                 overflow: auto;
-                border: solid 1px black;
+                border: solid 1px;
             }
 
-            ul {
+            .ouglist-ul {
                 list-style: none;
                 padding-left: 0;
-                margin-top:0;
+                margin-top: 0;
             }
 
-            .add-btn {
+            .ouglist-li {
+                position: relative;
+                width: 100%;
+                display: flex;
+                border-bottom: solid 1px;
+                overflow: hidden;
+            }
+
+            .ouglist-item {
+                width: 100%;
+                transition: transform 0.3s ease;
+                z-index: 1; 
+                background: var(--bs-body-bg,white); 
+                position: relative;
+            }
+
+
+            .ouglist-item.swiped {
+                transform: translateX(-2rem);
+            }
+
+            .ouglist-btn-remove {
+                position: absolute;
+                top: 0;
+                right: 0;
+                height: 100%;
+                width: 2rem;
+                background: red;
+                border: none;
+                cursor: pointer;
+
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+                z-index: 0; 
+            }
+
+            .ouglist-item.swiped ~ .ouglist-btn-remove {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .ouglist-btn-add {
                 bottom: 0;
                 right: 0;
                 position: absolute;
@@ -39,178 +80,129 @@ class OugList extends HTMLElement {
                 width: 3rem;
                 border-radius: 1rem;
             }
-            //#region filter-form
-            .filter-form {
+
+            .ouglist-filter {
                 position: absolute;
                 top: 0;
                 right: 0;
-                width: 3rem;
+                width: 1.5rem;
                 height: 3rem;
-                border-radius: 1rem;
-                background-color: var(--bs-body-bg, #fff);
-                color: var(--bs-btn-color, #fff);
-                border: 1px solid var(--bs-border-color, #ced4da);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                cursor: pointer;
-                font-weight: 600;
-                font-size: 2rem;
-                line-height: 1;
-                user-select: none;
-                transition: width 0.5s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
-                box-shadow: 0 0.5rem 1rem rgb(
-                var(--bs-primary-rgb, 13, 110, 253) / 0.5
-                );
+                transition: width 0.1s ease-in-out;
                 overflow: hidden;
                 transform-origin: right;
-                transition: width 0.5s ease, opacity 0.5s ease, visibility 0s linear 0.5s;
-                z-index:1;
+                z-index: 10;
             }
 
-            .filter-form.expanded {
-                width: 100%;
+            .ouglist-filter:hover {
+                width: 3rem;
                 height: 3rem;
-                background-color: var(--bs-body-bg, #fff);
-                border-color: var(--bs-border-color, #ced4da);
-                color: var(--bs-body-color, #212529);
-                cursor: auto;
+                z-index: 10;
+            }
+
+            .ouglist-filter.expanded {
+                width: 100%;
                 border-radius: 1rem;
-                box-shadow: none;
-                font-weight: normal;
-                font-size: 2rem;
                 display: flex;
                 transition-delay: 0s;
-                z-index:1;
+                z-index: 10;
             }
 
-            .input-group {
-                opacity: 0;
-                visibility: hidden;
-                transition:
-                    max-height 0.5s ease,
-                    opacity 0.5s ease,
-                    visibility 0s linear 0.5s;
-                max-height: 0;
+            .ouglist-filter-icon {
+                width: 1.5rem;
+                height: 100%;
+                border-radius: 0 1rem 1rem 0;
+                transition: width 0.1s ease-in-out, border-radius 0.1s ease-in-out;
+            }
+
+            .ouglist-filter:hover .ouglist-filter-icon {
+                width: 3rem;
+                border-radius: 1rem;
+            }
+
+            .ouglist-filter.expanded .ouglist-filter-icon {
+                width: 3rem;
+                border-radius: 1rem 0 0 1rem;
+            }
+
+            .ouglist-filter-icon label{
+                position: absolute;
+                left:0;
+                height:100%;
+                align-content: center;
+                top: 0;
+            }
+
+            .ouglist-filter:hover .ouglist-filter-icon label,
+            .ouglist-filter.expanded .ouglist-filter-icon label{
+                position:initial;
+                font-size: 1.5rem;
+            }
+
+            .ouglist-input-group {
+                transition: width 0.1s ease-in-out, max-width 0.5s  ease-in-out, height 0.1s ease 1s;
+                max-width: 0;
+                width:0;
+                height:0;
                 pointer-events: none;
                 overflow: hidden;
-                z-index: 2;
+                z-index: 1;
             }
 
-            .filter-form.expanded .input-group {
-                opacity: 1;
-                visibility: visible;
+            .ouglist-input-group input,
+            .ouglist-input-group button {
+                height: 100%;
+                font-size: 1rem;
+            }
+
+            .ouglist-input-group input{
+                width:100%;
+            }
+
+            .ouglist-filter.expanded .ouglist-input-group {
+        
                 transition-delay: 0s;
-                max-height: 100%;
+                max-width: 100%;
                 pointer-events: auto;
                 width: 100%;
                 display: flex;
                 align-items: center;
-                margin-right:1rem;
+                height: 100%;
             }
 
-             .input-group input[type="text"] {
-              width: 100%;
-              flex: 1; /* toma todo el ancho disponible */
-              padding: 0.375rem 0.75rem;
-              font-size: 1rem;
-              line-height: 1.5;
-              color: #212529;
-              background-color: #fff;
-              border: 1px solid #ced4da;
-              border-radius: 0.375rem;
-              transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            .ouglist-filter.expanded *:last-child{
+                border-radius: 0 1rem 1rem 0;
             }
 
-            .input-group input[type="text"]:focus {
-              border-color: #86b7fe;
-              box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-              outline: none;
+            .ouglist-backdrop {
+                display: none;
             }
 
-
-            .input-group button[type="submit"] {
-              padding: 0.375rem 0.75rem;
-              font-size: 1rem;
-              line-height: 1.5;
-              color: #fff;
-              background-color: #0d6efd;
-              border: 1px solid #0d6efd;
-              border-radius: 0.375rem;
-              cursor: pointer;
-              transition: background-color 0.15s ease-in-out,
-                          border-color 0.15s ease-in-out,
-                          box-shadow 0.15s ease-in-out;
-            }
-
-            .input-group button[type="submit"]:hover {
-              background-color: #0b5ed7;
-              border-color: #0a58ca;
-            }
-
-            //#region backdrop
-            .filter-form.expanded .backdrop {
-                display:block;
+            .ouglist-filter.expanded .ouglist-backdrop {
+                display: block;
                 position: fixed;
                 inset: 0;
-                background: transparent; 
-                z-index: 1;
+                background: rgba(74, 144, 226, 0.2);
+                backdrop-filter: blur(10px);
+                z-index: -1;
             }
-
-            .filter-form .backdrop {
-                 display: none;
-            }
-            //#endregion
-
-            //#endregion
-
-            .ougli {
-                width: 100%;
-                display: flex;
-            }
-
-            .ougli.swiped {
-                transform: translateX(-4rem); /* ajusta según el tamaño del botón */
-            }
-
-            .remove-btn {
-                position: absolute;
-                right: 0.5rem;
-                top: 50%;
-                transform: translateY(-50%);
-                border: none;
-                width: 2rem;
-                height: 2rem;
-                background: red;
-                color: white;
-                border-radius: 50%;
-                cursor: pointer;
-                opacity: 0;
-                transition: opacity 0.3s ease;
-            }
-
-            .ougli.swiped .remove-btn {
-                opacity: 1;
-                z-index: 1;
-            }
-          
-           
 
         </style>
-        <div class="container">
-            <form class="filter-form">
-            <label>🔍</label>
-                <div class="input-group">
+        <div class="ouglist-container">
+            <form class="ouglist-filter">
+                <button class="ouglist-filter-icon"><label>🔍</label></button>
+                <div class="ouglist-input-group">
                     <input type="text" placeholder="Filtrar por nombre"/>
                     <button type="submit">Filtrar</button>
                 </div>
-                
-                <div class="backdrop" ></div>
+                <div class="ouglist-backdrop" ></div>
             </form>
-            <div class="wrapper">
-                <ul></ul>
+            <div class="ouglist-wrapper">
+                <ul class=ouglist-ul></ul>
             </div>
-            <button class="add-btn">+</button>
+            <button class="ouglist-btn-add">+</button>
         </div>
         `;
         //#endregion 
@@ -218,15 +210,22 @@ class OugList extends HTMLElement {
         this.appendChild(template.content.cloneNode(true));
 
         //#region  Referencias
-        this.container = this.querySelector('.container');
-        this.wrapper = this.querySelector('.wrapper');
-        this.ul = this.querySelector('ul');
-        this.addButton = this.querySelector('.add-btn');
-        this.filterForm = this.querySelector('.filter-form');
-        this.filterForm.filterInputGroup = this.filterForm.querySelector('.input-group');
+        this.container = this.querySelector('.ouglist-container');
+        this.wrapper = this.querySelector('.ouglist-wrapper');
+        this.ul = this.querySelector('.ouglist-ul');
+        this.addButton = this.querySelector('.ouglist-btn-add');
+        this.filterForm = this.querySelector('.ouglist-filter');
+        this.filterForm.filterInputGroup = this.filterForm.querySelector('.ouglist-input-group');
         this.filterForm.filterInput = this.filterForm.querySelector('input');
-        this.filterForm.backdrop = this.filterForm.querySelector('.backdrop');
-        //#endregion 
+        this.filterForm.backdrop = this.filterForm.querySelector('.ouglist-backdrop');
+        //#endregion
+
+        //#region Swiper
+        this.activeItem = null;
+        this.startX = 0;
+        this.currentX = 0;
+        this.touching = false;
+        //#endregion
     }
 
     //#region HTMLElement
@@ -281,16 +280,9 @@ class OugList extends HTMLElement {
         const items = this.filteredData.length ? this.filteredData : this.data;
         this.ul.innerHTML = '';
         const fragment = document.createDocumentFragment(); // <--- buffer en memoria
-
-        for (const itemHTML of items) {
-            itemHTML.innerHTML = `
-            <div>
-                ${itemHTML.innerHTML.trim()}
-            </div>
-            <button class="remove-btn">X</button>
-        `;
-            itemHTML.classList.add('ougli');
-            this.addSwipeSupport(itemHTML);
+        for (const [i, itemHTML] of items.entries()) {
+            itemHTML.innerHTML = this.parseItem(itemHTML.innerHTML.trim()); 
+            itemHTML.classList.add('ouglist-li');
             fragment.appendChild(itemHTML); // aún no se toca el DOM real
         }
 
@@ -316,54 +308,79 @@ class OugList extends HTMLElement {
         this.filterForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const query = this.filterForm.filterInput.value.toLowerCase();
-            this.filteredData = this.data.filter(item => item.toLowerCase().includes(query));
+            this.filteredData = this.data.filter(item => item.outerHTML.trim().toLowerCase().includes(query));
             this.render();
         });
 
-        //// Delegación para quitar item
-        //this.ul.addEventListener('click', (e) => {
-        //    if (e.target.classList.contains('remove-btn')) {
-        //        const li = e.target.closest('li');
-        //        if(li) this.removeItem(li);
-        //    } else if (e.target.nodeName==='LI') {
-        //        //this.onClickItem(e.target);
-        //    }
-        //});
+        this.ul.addEventListener('click', (e) => {
+            if (e.target.classList.contains('ouglist-btn-remove')) {
+                const item = e.target.closest('li');
+                this.removeItem(item);
+            }
+        });
+
+        this.ul.addEventListener('pointerdown', (e) => {
+            const item = e.target.closest('li div.ouglist-item');
+            if (!item || !this.ul.contains(item)) return;
+            this.activeItem = item;
+            this.touching = true;
+            this.startX = e.clientX;
+        });
+
+        this.ul.addEventListener('pointermove', (e) => {
+            if (!this.touching || !this.activeItem) return;
+            this.currentX = e.clientX;
+            const diffX = this.currentX - this.startX;
+            this.handleSwipe(this.activeItem, diffX);
+        });
+
+        this.ul.addEventListener('pointerup', () => {
+            if (!this.touching || !this.activeItem) return;
+            this.touching = false;
+            const diffX = this.currentX - this.startX;
+            this.handleSwipe(this.activeItem, diffX);
+            this.activeItem = null;
+        });
     }
 
-    addItem(item = `Item ${this.data.length + 1}`) {
+    parseItem(item) {
+        if (item.includes('ouglist-item')) return item;
+        return `
+            <div class="ouglist-item">
+                ${item}
+            </div>
+            <button class="ouglist-btn-remove">X</button>
+            `;
+    }
+
+    addItem(item = `<label>${this.data.length }</label>`) {
         if (!item) throw new Error('item required');
 
         // Crear nodo real
         const li = document.createElement('li');
-        li.classList.add('ougli');
-        li.innerHTML = `
-        <div>
-            <label>${item}</label>
-        </div>
-        <button class="remove-btn">X</button>
-    `;
+        li.dataset.ouglistitemid = this.itemid;
+        this.itemid += 1;
+        li.classList.add('ouglist-li');
+        li.innerHTML = this.parseItem(item);
 
-        this.addSwipeSupport(li);
-
-        // Agregar al DOM al principio
         this.ul.insertBefore(li, this.ul.firstChild);
-
-        // Guardar referencia real
-        this.data.unshift(li);
+        this.data.push(li);
     }
 
     removeItem(item) {
-        const html = item.outerHTML.trim();
+        const id = item.dataset.ouglistitemid;
         item.remove();
-        const index = this.data.indexOf(html);
-        if (index !== -1) this.data.splice(index, 1);
+        this.data = this.data.filter(x => {
+            return x.dataset?.ouglistitemid !== id;
+        });
     }
 
     parseExistingLI() {
         const existingLI = Array.from(this.querySelectorAll('li'));
         for (let li of existingLI)
         {
+            li.dataset.ouglistitemid = this.itemid;
+            this.itemid += 1;
             this.data.push(li);
             li.remove();
         }
@@ -393,53 +410,13 @@ class OugList extends HTMLElement {
         }
     }
 
-    addSwipeSupport(li) {
-        let startX = 0, currentX = 0, touching = false;
-
-        // Soporte para táctil
-        li.addEventListener('touchstart', e => {
-            touching = true;
-            startX = e.touches[0].clientX;
-        });
-
-        li.addEventListener('touchmove', e => {
-            if (!touching) return;
-            currentX = e.touches[0].clientX;
-        });
-
-        li.addEventListener('touchend', () => {
-            if (!touching) return;
-            touching = false;
-            this.handleSwipe(li, currentX - startX);
-        });
-
-        // Soporte para mouse
-        li.addEventListener('mousedown', e => {
-            touching = true;
-            startX = e.clientX;
-        });
-
-        li.addEventListener('mousemove', e => {
-            if (!touching) return;
-            currentX = e.clientX;
-        });
-
-        li.addEventListener('mouseup', () => {
-            if (!touching) return;
-            touching = false;
-            this.handleSwipe(li, currentX - startX);
-        });
-    }
-
-    handleSwipe(li, diffX) {
+    handleSwipe(itemDiv, diffX) {
         if (diffX < -30) {
-            li.classList.add('swiped');
+            itemDiv.classList.add('swiped');
         } else if (diffX > 30) {
-            li.classList.remove('swiped');
+            itemDiv.classList.remove('swiped');
         }
     }
-
-
 }
 
 customElements.define('oug-list', OugList);

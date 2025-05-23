@@ -20,3 +20,13 @@ function ajaxCall(url, method = 'GET', body = null) {
             else return response;
         });
 }
+
+function changeTheme() {
+    if(document.documentElement.getAttribute('data-bs-theme')=='dark')
+        document.documentElement.setAttribute('data-bs-theme', 'light');
+    else document.documentElement.setAttribute('data-bs-theme', 'dark');
+}
+
+(() => {
+    document.getElementById('changeThemeBtn').addEventListener('click', changeTheme);
+})();
