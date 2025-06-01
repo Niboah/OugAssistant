@@ -8,6 +8,7 @@
         this._onClickItem = (el) => alert(el.dataset.data);
         this._onClickAdd = () => { this.#addItem(`<label>${this.data.length}</label>`); };
         this._onClickRemove = () => { return true };
+        this._onClickConfirm = () => { return true };
 
         //#region Template
         const template = document.createElement('template');
@@ -51,8 +52,12 @@
             }
 
 
-            .ouglist-item.swiped {
+            .ouglist-item.swiped-left {
                 transform: translateX(-2rem);
+            }
+
+            .ouglist-item.swiped-right {
+                transform: translateX(2rem);
             }
 
             .ouglist-btn-remove {
@@ -71,7 +76,28 @@
                 z-index: 0; 
             }
 
-            .ouglist-item.swiped ~ .ouglist-btn-remove {
+            .ouglist-item.swiped-left ~ .ouglist-btn-remove {
+                opacity: 1;
+                pointer-events: auto;
+            }
+
+            .ouglist-btn-confirm {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                width: 2rem;
+                background: green;
+                border: none;
+                cursor: pointer;
+
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.3s ease;
+                z-index: 0;
+            }
+
+            .ouglist-item.swiped-right ~ .ouglist-btn-confirm {
                 opacity: 1;
                 pointer-events: auto;
             }
@@ -230,6 +256,8 @@
         this.currentX = 0;
         this.touching = false;
         this.diffX = null;
+        this.swiperState = 0;
+        this.swipeDistance = 30;
         //#endregion
     }
 
@@ -308,7 +336,33 @@
 
     set onClickRemove(fn) {
         if (typeof fn === 'function') {
-            this._onClickRemove = fn;
+            this._onClickRemove = async (...args) => {
+                try {
+                    const result = await fn(...args);
+                    return typeof result === 'boolean' ? result : false;
+                } catch (e) {
+                    console.warn(e);
+                    return false;
+                }
+            };
+        }
+    }
+
+    get onClickConfirm() {
+        return this._onClickRemove;
+    }
+
+    set onClickConfirm(fn) {
+        if (typeof fn === 'function') {
+            this._onClickConfirm = async (...args) => {
+                try {
+                    const result = await fn(...args);
+                    return typeof result === 'boolean' ? result : false;
+                } catch (e) {
+                    console.warn(e);
+                    return false;
+                }
+            };
         }
     }
 
@@ -357,8 +411,10 @@
         this.ul.addEventListener('click', (e) => {
             const item = e.target.closest('li');
             if (item && e.target.classList.contains('ouglist-btn-remove')) {
-
-                if (this.onClickRemove(e, item))
+                if (this._onClickRemove(e, item))
+                    this.#removeItem(item);
+            } else if (item && e.target.classList.contains('ouglist-btn-confirm')) {
+                if (this._onClickConfirm(e, item)) 
                     this.#removeItem(item);
             }
             else if (item) {
@@ -370,11 +426,16 @@
         this.ul.addEventListener('pointerdown', (e) => {
             const item = e.target.closest('li div.ouglist-item');
             if (!item || !this.ul.contains(item)) return;
-            this.diffX = null;
+            if (this.activeItem && this.activeItem != item) {
+                this.#resetSwipe(this.activeItem);
+                this.swiperState = 0;
+            }
             this.activeItem = item;
+            this.diffX = null;
             this.touching = true;
             this.startX = e.clientX;
             this.currentX = e.clientX;
+            this.swiperState = this.swiperState == 2 ? 0 : this.swiperState;
         });
 
         this.ul.addEventListener('pointermove', (e) => {
@@ -388,18 +449,17 @@
         this.ul.addEventListener('pointerup', (e) => {
             if (!this.touching || !this.activeItem) return;
             this.touching = false;
-            this.diffX = this.currentX - this.startX;
-            this.#handleSwipe(this.activeItem, this.diffX);
-            this.activeItem = null;
         });
     }
 
     #parseItem(item) {
         if (item.includes('ouglist-item')) return item;
         return `
+            
             <div class="ouglist-item">
                 ${item}
             </div>
+            <button class="ouglist-btn-confirm">✓</button>
             <button class="ouglist-btn-remove">X</button>
             `;
     }
@@ -460,14 +520,30 @@
         }
     }
 
-    #handleSwipe(itemDiv, diffX) {
-        if (diffX < -30) {
-            itemDiv.classList.add('swiped');
-        } else if (diffX > 30) {
-            itemDiv.classList.remove('swiped');
+    #handleSwipe(item, diffX) {
+        const li = item.closest('li');
+        if (diffX < -this.swipeDistance) {
+            if (this.swiperState == 0) this.swiperState = -1;
+            else if (this.swiperState == 1) this.swiperState = 2;
+        } else if (diffX > this.swipeDistance) {
+            if (this.swiperState == 0) this.swiperState = 1;
+            else if (this.swiperState == -1) this.swiperState = 2;
+        }
+
+        if (this.swiperState == -1) {
+            item.classList.add('swiped-left');
+        } else if (this.swiperState == 1) {
+            item.classList.add('swiped-right');
+        } else if(this.swiperState == 2) {
+            this.#resetSwipe(item);
         }
     }
 
+    #resetSwipe(item) {
+        item.classList.remove('swiped-right');
+        item.classList.remove('swiped-left');
+        this.activeItem = null;
+    }
     //#endregion
 }
 

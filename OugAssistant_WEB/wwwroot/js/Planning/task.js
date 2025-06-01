@@ -8,6 +8,7 @@ class TasksList {
         this.tasklist.onClickItem = this.openTask;
         this.tasklist.onClickAdd = this.openTask;
         this.tasklist.onClickRemove = this.eliminateTask;
+        this.tasklist.onClickConfirm = this.confirmTask;
 
         //region taskform
         this.selectedTaskId;
@@ -280,6 +281,19 @@ class TasksList {
         }
     }
 
+    get confirmTask() {
+        const that = this;
+        return async (e, item) => {
+            try {
+                let id = item.dataset.taskid;
+                const result = await that.finishTask(id);
+                return result == "";
+            } catch (ex) {
+                console.error(ex);
+                return false;
+            }
+        }
+    }
 
     addRoutineHour(day = -1, value = "") {
         const that = this;
@@ -307,7 +321,7 @@ class TasksList {
 
             document.querySelectorAll('.removeRoutineHour').forEach(el => { el.onclick = that.removeRoutineHour });
         }
-        
+
     }
 
     removeRoutineHour(event) {
@@ -420,6 +434,10 @@ class TasksList {
                 alert(JSON.stringify(result));
                 return result.id;
             });
+    }
+
+    finishTask(id) {
+        if (id) return ajaxCall('/api/Task/Finish/' + id, 'PATCH');
     }
 
     //#endregion

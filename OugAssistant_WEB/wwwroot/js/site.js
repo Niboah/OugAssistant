@@ -13,11 +13,27 @@ function ajaxCall(url, method = 'GET', body = null) {
             },
             body: body ? JSON.stringify(body) : null
         })
-        .then(response => {
-            if (!response.ok) throw "AjaxCall fail";
-            else if (response.status == '204') return true;
-            else if (response.bodyUsed) return response.json();
-            else return response.json();
+        .then(async response => {
+            if (!response.ok) {
+                const errorText = await response.text(); // capturar el error del cuerpo si existe
+                throw new Error(`Error ${response.status}: ${errorText || response.statusText}`);
+            }
+
+            if (response.status === 204) {
+                // No Content
+                return true;
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                return response.text(); // fallback si no es JSON
+            }
+        })
+        .catch(error => {
+            console.error('ajaxCall error:', error);
+            throw error; // relanzar para que lo maneje quien llamó a la función
         });
 }
 

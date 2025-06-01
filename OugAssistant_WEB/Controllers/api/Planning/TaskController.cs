@@ -52,7 +52,7 @@ public class TaskController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<OugTask>>> GetTasks()
     {
-        return await _context.OugTasks.ToListAsync();
+        return await _context.OugTasks.Where(x=>x.FinishDateTime == null).ToListAsync();
     }
 
     [HttpGet("{id}")]
@@ -92,7 +92,7 @@ public class TaskController : ControllerBase
 
         return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
     }
-    
+
     [Route("Mission")]
     [HttpPost]
     public async Task<ActionResult<OugTask>> CreateMission([FromBody] OugMissionDto dto)
@@ -117,7 +117,7 @@ public class TaskController : ControllerBase
 
         return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
     }
-    
+
     [Route("Routine")]
     [HttpPost]
     public async Task<ActionResult<OugTask>> CreateRoutine([FromBody] OugRoutineDto dto)
@@ -142,6 +142,7 @@ public class TaskController : ControllerBase
 
         return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
     }
+
 
     #endregion
 
@@ -192,6 +193,17 @@ public class TaskController : ControllerBase
         if (dto.Priority.HasValue) task.Priority = dto.Priority.Value;
         if (dto.WeekTimes != null) task.WeekTimes = dto.WeekTimes;
 
+        await _context.SaveChangesAsync();
+        return Ok();
+    }
+
+    [Route("Finish/{id}")]
+    [HttpPatch]
+    public async Task<IActionResult> FinishTask(Guid id)
+    {
+        var task = await _context.OugTasks.OfType<OugTask>().Include(t => t.Goal).FirstOrDefaultAsync(t => t.Id == id);
+        if (task == null) return NotFound();
+        task.Finish();
         await _context.SaveChangesAsync();
         return Ok();
     }
