@@ -5,34 +5,46 @@
 	<oug-list id="ouglist-tasklist">
 		@foreach (var item in Model.TaskList)
 		{
-			<li class="list-group-item d-flex" data-taskid="@(item.Id)">
-
-				<div class="row">
-					<div class="col-8">
-						<h4>@item.Name</h4>
+			<li class="list-group-item" data-taskid="@(item.Id)">
+				<div class="m-2">
+					<div class="row align-items-center">
+						<div class="col-8 d-flex align-items-center">
+							<h4 class="mb-0"><strong>@item.Name</strong></h4>
+						</div>
+						<div class="col-4 text-end">
+							🎯 @item.Goal.Name
+						</div>
 					</div>
-					<div class="col-4">
-						@item.Goal.Name
-					</div>
-				</div>
-				<div class="row">
-					@switch (item)
-					{
-						case OugMission m:
-							<div>Deadline: @m.DeadLine</div>
-							break;
-						case OugEvent e:
-							<div class="d-flex">
-								<div class="flex-shrink-1">Place: @e.Place</div>
-								<div class="flex-grow-1 text-end">DateTime: @e.EventDateTime</div>
-							</div>
 
-							break;
-						case OugRoutine r:
-							<div>Times per week: @r.WeekTimes?.Length ?? 0</div>
-							break;
-					}
+					<div class="row mt-2">
+						<div class="col-4">
+							@switch (item)
+							{
+								case OugMission m:
+									<div>
+										📅 @m.DeadLine
+									</div>
+									break;
+								case OugEvent e:
+									<div class="d-flex flex-column justify-content-between">
+										<span>📍 @e.Place</span>
+										<span>⏰ @e.EventDateTime</span>
+									</div>
+									break;
+								case OugRoutine r:
+									<div>
+										<i class="bi bi-repeat me-1"></i> Veces por semana: @r.WeekTimes?.Length ?? 0
+									</div>
+									break;
+							}
+						</div>
+						<div class="col-8">
+							ℹ️ @item.Description
+						</div>
+					</div>
+
 				</div>
+
 			</li>
 		}
 	</oug-list>

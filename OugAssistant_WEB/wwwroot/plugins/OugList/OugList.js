@@ -6,7 +6,7 @@
         this.filteredData = [];
 
         this._onClickItem = (el) => alert(el.dataset.data);
-        this._onClickAdd = () => { this.addItem(`<label>${this.data.length}</label>`); };
+        this._onClickAdd = () => { this.#addItem(`<label>${this.data.length}</label>`); };
         this._onClickRemove = () => { return true };
 
         //#region Template
@@ -24,6 +24,7 @@
                 height: 100%;
                 overflow: auto;
                 border: solid 1px;
+                border-radius: 1rem 0rem 0rem 1rem;
             }
 
             .ouglist-ul {
@@ -239,16 +240,16 @@
      */
     connectedCallback() {
         console.log(`connectedCallback ${this.id}`);
-        this.attachEventHandlers();
-        this.addObserver();
-        this.render();
+        this.#attachEventHandlers();
+        this.#addObserver();
+        this.#render();
     }
     /**
      * Called each time the element is removed from the document.
      */
     disconnectedCallback() {
         console.log(`disconnectedCallback ${this.id}`);
-        this.removeObserver();
+        this.#removeObserver();
     }
 
     /**
@@ -277,6 +278,8 @@
     }
 
     //#endregion
+
+    //#region public
 
     get onClickItem() {
         return this._onClickItem;
@@ -308,12 +311,16 @@
         }
     }
 
-    render() {
+    //#endregion
+
+    //#region private
+
+    #render() {
         const items = this.filteredData.length ? this.filteredData : this.data;
         this.ul.innerHTML = '';
         const fragment = document.createDocumentFragment(); // <--- buffer en memoria
         for (const [i, itemHTML] of items.entries()) {
-            itemHTML.innerHTML = this.parseItem(itemHTML.innerHTML.trim()); 
+            itemHTML.innerHTML = this.#parseItem(itemHTML.innerHTML.trim());
             itemHTML.classList.add('ouglist-li');
             fragment.appendChild(itemHTML); // aún no se toca el DOM real
         }
@@ -321,7 +328,7 @@
         this.ul.appendChild(fragment); // solo una operación en el DOM
     }
 
-    attachEventHandlers() {
+    #attachEventHandlers() {
         this.addButton.addEventListener('click', (e) => {
             this._onClickAdd(e);
         });
@@ -343,19 +350,19 @@
             e.preventDefault();
             const query = this.filterForm.filterInput.value.toLowerCase();
             this.filteredData = this.data.filter(item => item.outerHTML.trim().toLowerCase().includes(query));
-            this.render();
+            this.#render();
         });
 
         this.ul.addEventListener('click', (e) => {
             const item = e.target.closest('li');
             if (item && e.target.classList.contains('ouglist-btn-remove')) {
-                
-                if(this.onClickRemove(e,item))
-                    this.removeItem(item);
+
+                if (this.onClickRemove(e, item))
+                    this.#removeItem(item);
             }
             else if (item) {
                 if (this.diffX) return;
-                this._onClickItem(e,item);
+                this._onClickItem(e, item);
             }
         });
 
@@ -373,7 +380,7 @@
             if (!this.touching || !this.activeItem) return;
             this.currentX = e.clientX;
             this.diffX = this.currentX - this.startX;
-            this.handleSwipe(this.activeItem, this.diffX);
+            this.#handleSwipe(this.activeItem, this.diffX);
 
         });
 
@@ -381,12 +388,12 @@
             if (!this.touching || !this.activeItem) return;
             this.touching = false;
             this.diffX = this.currentX - this.startX;
-            this.handleSwipe(this.activeItem, this.diffX);
+            this.#handleSwipe(this.activeItem, this.diffX);
             this.activeItem = null;
         });
     }
 
-    parseItem(item) {
+    #parseItem(item) {
         if (item.includes('ouglist-item')) return item;
         return `
             <div class="ouglist-item">
@@ -396,7 +403,7 @@
             `;
     }
 
-    addItem(item) {
+    #addItem(item) {
         if (!item) throw new Error('item required');
 
         // Crear nodo real
@@ -404,13 +411,13 @@
         li.dataset.ouglistitemid = this.itemid;
         this.itemid += 1;
         li.classList.add('ouglist-li');
-        li.innerHTML = this.parseItem(item);
+        li.innerHTML = this.#parseItem(item);
 
         this.ul.insertBefore(li, this.ul.firstChild);
         this.data.push(li);
     }
 
-    removeItem(item) {
+    #removeItem(item) {
         const id = item.dataset.ouglistitemid;
         item.remove();
         this.data = this.data.filter(x => {
@@ -418,10 +425,9 @@
         });
     }
 
-    parseExistingLI() {
+    #parseExistingLI() {
         const existingLI = Array.from(this.querySelectorAll('li'));
-        for (let li of existingLI)
-        {
+        for (let li of existingLI) {
             li.dataset.ouglistitemid = this.itemid;
             this.itemid += 1;
             this.data.push(li);
@@ -429,8 +435,8 @@
         }
     }
 
-    addObserver() {
-        this.parseExistingLI();
+    #addObserver() {
+        this.#parseExistingLI();
 
         // Observar cambios posteriores
         this.observer = new MutationObserver((mutationsList) => {
@@ -438,7 +444,7 @@
                 if (mutation.type === 'childList') {
                     const addedLis = Array.from(this.querySelectorAll('li'));
                     this.data = addedLis
-                    this.render();
+                    this.#render();
                 }
             }
         });
@@ -446,20 +452,22 @@
         this.observer.observe(this, { childList: true, subtree: false });
     }
 
-    removeObserver() {
+    #removeObserver() {
         console.log(`disconnectedCallback ${this.id}`);
         if (this.observer) {
             this.observer.disconnect();
         }
     }
 
-    handleSwipe(itemDiv, diffX) {
+    #handleSwipe(itemDiv, diffX) {
         if (diffX < -30) {
             itemDiv.classList.add('swiped');
         } else if (diffX > 30) {
             itemDiv.classList.remove('swiped');
         }
     }
+
+    //#endregion
 }
 
 customElements.define('oug-list', OugList);
