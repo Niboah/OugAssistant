@@ -18,6 +18,7 @@
                 height: 100%;
                 padding: 0 1.5rem;
                 box-sizing: border-box;
+                user-select: none;
             }
 
             .ouglist-wrapper {
