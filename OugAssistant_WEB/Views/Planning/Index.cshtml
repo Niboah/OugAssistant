@@ -8,23 +8,5 @@
 	<div id="calendar_container" class="h-100 col-lg-8 d-none d-md-block">
 		
 	</div>
-	<div id="task_container" class="h-100 col-lg-4 col-sm-12">
-		<oug-list id="test1">
-			@foreach (var item in Model.TaskList)
-			{
-				<li class="list-group-item d-flex" data-taskid="@(item.Id)">
-					<div class="w-100 d-flex">
-					<div class="OugTask flex-grow-1">
-						<label>
-							@item.Name
-						</label>
-					</div>
-					<button data-taskid="@(item.Id)" class="button btn-close float-end deleteTask"> </button>
-					</div>
-				</li>
-			}
-		</oug-list>
-	</div>
+	@await Html.PartialAsync("_taskList", Model)
 </div>
-
-<script src="~/plugins/OugList/OugList.js"></script>

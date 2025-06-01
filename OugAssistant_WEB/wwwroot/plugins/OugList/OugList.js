@@ -5,7 +5,9 @@
         this.data = [];
         this.filteredData = [];
 
-        this.onClickItem = (el) => alert(el.dataset.data);
+        this._onClickItem = (el) => alert(el.dataset.data);
+        this._onClickAdd = () => { this.addItem(`<label>${this.data.length}</label>`); };
+        this._onClickRemove = () => { return true };
 
         //#region Template
         const template = document.createElement('template');
@@ -225,6 +227,7 @@
         this.startX = 0;
         this.currentX = 0;
         this.touching = false;
+        this.diffX = null;
         //#endregion
     }
 
@@ -275,6 +278,35 @@
 
     //#endregion
 
+    get onClickItem() {
+        return this._onClickItem;
+    }
+
+    set onClickItem(fn) {
+        if (typeof fn === 'function') {
+            this._onClickItem = fn;
+        }
+    }
+
+    get onClickAdd() {
+        return this._onClickAdd;
+    }
+
+    set onClickAdd(fn) {
+        if (typeof fn === 'function') {
+            this._onClickAdd = fn;
+        }
+    }
+
+    get onClickRemove() {
+        return this._onClickRemove;
+    }
+
+    set onClickRemove(fn) {
+        if (typeof fn === 'function') {
+            this._onClickRemove = fn;
+        }
+    }
 
     render() {
         const items = this.filteredData.length ? this.filteredData : this.data;
@@ -290,7 +322,9 @@
     }
 
     attachEventHandlers() {
-        this.addButton.addEventListener('click', () => this.addItem());
+        this.addButton.addEventListener('click', (e) => {
+            this._onClickAdd(e);
+        });
 
         this.filterForm.addEventListener('click', () => {
             this.filterForm.classList.toggle('expanded');
@@ -313,32 +347,41 @@
         });
 
         this.ul.addEventListener('click', (e) => {
-            if (e.target.classList.contains('ouglist-btn-remove')) {
-                const item = e.target.closest('li');
-                this.removeItem(item);
+            const item = e.target.closest('li');
+            if (item && e.target.classList.contains('ouglist-btn-remove')) {
+                
+                if(this.onClickRemove(e,item))
+                    this.removeItem(item);
+            }
+            else if (item) {
+                if (this.diffX) return;
+                this._onClickItem(e,item);
             }
         });
 
         this.ul.addEventListener('pointerdown', (e) => {
             const item = e.target.closest('li div.ouglist-item');
             if (!item || !this.ul.contains(item)) return;
+            this.diffX = null;
             this.activeItem = item;
             this.touching = true;
             this.startX = e.clientX;
+            this.currentX = e.clientX;
         });
 
         this.ul.addEventListener('pointermove', (e) => {
             if (!this.touching || !this.activeItem) return;
             this.currentX = e.clientX;
-            const diffX = this.currentX - this.startX;
-            this.handleSwipe(this.activeItem, diffX);
+            this.diffX = this.currentX - this.startX;
+            this.handleSwipe(this.activeItem, this.diffX);
+
         });
 
-        this.ul.addEventListener('pointerup', () => {
+        this.ul.addEventListener('pointerup', (e) => {
             if (!this.touching || !this.activeItem) return;
             this.touching = false;
-            const diffX = this.currentX - this.startX;
-            this.handleSwipe(this.activeItem, diffX);
+            this.diffX = this.currentX - this.startX;
+            this.handleSwipe(this.activeItem, this.diffX);
             this.activeItem = null;
         });
     }
@@ -353,7 +396,7 @@
             `;
     }
 
-    addItem(item = `<label>${this.data.length }</label>`) {
+    addItem(item) {
         if (!item) throw new Error('item required');
 
         // Crear nodo real

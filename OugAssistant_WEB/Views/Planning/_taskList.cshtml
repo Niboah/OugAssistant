@@ -1,27 +1,42 @@
-﻿<div id="taskList" class="position-relative">
+﻿@model OugAssistant_WEB.Models.Planning.TaskViewModel
+@using OugAssistant.Features.Planning.Model;
 
-	<div id="list_container" class="h-100 overflow-auto m-2 border border-primary">
-		<ul id="taskList" class="list-group">
-			@foreach (var item in Model.TaskList)
-			{
-				<li class="list-group-item d-flex" data-taskid="@(item.Id)">
-					<div class="OugTask flex-grow-1">
-						<label>
-							@item.Name
-						</label>
+<div id="task_container" class="h-100 col-lg-4 col-sm-12">
+	<oug-list id="ouglist-tasklist">
+		@foreach (var item in Model.TaskList)
+		{
+			<li class="list-group-item d-flex" data-taskid="@(item.Id)">
+
+				<div class="row">
+					<div class="col-8">
+						<h4>@item.Name</h4>
 					</div>
-					<button data-taskid="@(item.Id)" class="button btn-close float-end deleteTask"> </button>
-				</li>
-			}
-		</ul>
-	</div>
-	<button id="btnFilterTask" class="button btn-primary rounded-circle position-absolute top-0 end-0" style="height: 2rem; width:2rem">  </button>
+					<div class="col-4">
+						@item.Goal.Name
+					</div>
+				</div>
+				<div class="row">
+					@switch (item)
+					{
+						case OugMission m:
+							<div>Deadline: @m.DeadLine</div>
+							break;
+						case OugEvent e:
+							<div class="d-flex">
+								<div class="flex-shrink-1">Place: @e.Place</div>
+								<div class="flex-grow-1 text-end">DateTime: @e.EventDateTime</div>
+							</div>
 
-	<button id="btnAddTask" class="button btn-primary rounded-circle position-absolute bottom-0 end-0" style="height: 3rem; width:3rem" data-bs-toggle="modal" data-bs-target="#taskModal">
-		+
-	</button>
+							break;
+						case OugRoutine r:
+							<div>Times per week: @r.WeekTimes?.Length ?? 0</div>
+							break;
+					}
+				</div>
+			</li>
+		}
+	</oug-list>
 </div>
-
 
 
 <div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">
@@ -169,7 +184,7 @@
 			<!-- Pie del modal -->
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-				<button id="btnNewTask" type="button" class="btn btn-primary">Guardar Cambios</button>
+				<button id="btnSaveTask" type="button" class="btn btn-primary">Guardar Cambios</button>
 			</div>
 
 		</div>
@@ -206,11 +221,12 @@
 			<!-- Pie del modal -->
 			<div class="modal-footer">
 				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-				<button id="btnNewGoal" type="button" class="btn btn-primary">Guardar Cambios</button>
+				<button id="btnSaveGoal" type="button" class="btn btn-primary">Guardar Cambios</button>
 			</div>
 
 		</div>
 	</div>
 </div>
 
+<script src="~/plugins/OugList/OugList.js"></script>
 <script src="~/js/Planning/task.js"></script>
