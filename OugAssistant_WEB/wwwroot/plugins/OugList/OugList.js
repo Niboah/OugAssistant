@@ -251,13 +251,12 @@
         //#endregion
 
         //#region Swiper
-        this.activeItem = null;
+        this.swiperActiveItem = null;
         this.startX = 0;
         this.currentX = 0;
-        this.touching = false;
-        this.diffX = null;
         this.swiperState = 0;
-        this.swipeDistance = 30;
+        this.swipeDistance = 3;
+        this.diffX = 0; //para evitar click despues del pointermove
         //#endregion
     }
 
@@ -414,7 +413,7 @@
                 if (this._onClickRemove(e, item))
                     this.#removeItem(item);
             } else if (item && e.target.classList.contains('ouglist-btn-confirm')) {
-                if (this._onClickConfirm(e, item)) 
+                if (this._onClickConfirm(e, item))
                     this.#removeItem(item);
             }
             else if (item) {
@@ -423,34 +422,45 @@
             }
         });
 
-        this.ul.addEventListener('pointerdown', (e) => {
-            const item = e.target.closest('li div.ouglist-item');
-            if (!item || !this.ul.contains(item)) return;
-            if (this.activeItem && this.activeItem != item) {
-                this.#resetSwipe(this.activeItem);
-                this.swiperState = 0;
-            }
-            this.activeItem = item;
-            this.diffX = null;
-            this.touching = true;
-            this.startX = e.clientX;
-            this.currentX = e.clientX;
-            this.swiperState = this.swiperState == 2 ? 0 : this.swiperState;
-        });
-
-        this.ul.addEventListener('pointermove', (e) => {
-            if (!this.touching || !this.activeItem) return;
-            this.currentX = e.clientX;
-            this.diffX = this.currentX - this.startX;
-            this.#handleSwipe(this.activeItem, this.diffX);
-
-        });
-
-        this.ul.addEventListener('pointerup', (e) => {
-            if (!this.touching || !this.activeItem) return;
-            this.touching = false;
-        });
+        this.ul.addEventListener('pointerdown', this.#swipeDown());
+        this.ul.addEventListener('pointermove', this.#swipeMove());
+        this.ul.addEventListener('pointerup', this.#swipeUp());
     }
+
+    #swipeDown() {
+        const that = this;
+        return (e) => {
+            const item = e.target.closest('li div.ouglist-item');
+            if (!item || !that.ul.contains(item)) return;
+            if (that.swiperActiveItem && that.swiperActiveItem != item) {
+                that.#resetSwipe(that.swiperActiveItem);
+                that.swiperState = 0;
+            }
+            that.swiperActiveItem = item;
+            that.startX = e.clientX;
+            that.currentX = e.clientX;
+            that.diffX = 0;
+            that.swiperState = that.swiperState == 2 ? 0 : that.swiperState;
+        }
+    }
+
+    #swipeMove() {
+        const that = this;
+        return (e) => {
+            if (that.swiperState == 2 || !that.swiperActiveItem) return;
+            that.currentX = e.clientX;
+            that.diffX = that.currentX - that.startX;
+            that.#handleSwipe(that.swiperActiveItem, that.diffX);
+        }
+    }
+
+    #swipeUp() {
+        const that = this;
+        return (e) => {
+            that.swiperActiveItem = null;
+        }
+    }
+
 
     #parseItem(item) {
         if (item.includes('ouglist-item')) return item;
@@ -534,7 +544,7 @@
             item.classList.add('swiped-left');
         } else if (this.swiperState == 1) {
             item.classList.add('swiped-right');
-        } else if(this.swiperState == 2) {
+        } else if (this.swiperState == 2) {
             this.#resetSwipe(item);
         }
     }
@@ -542,7 +552,7 @@
     #resetSwipe(item) {
         item.classList.remove('swiped-right');
         item.classList.remove('swiped-left');
-        this.activeItem = null;
+        this.swiperActiveItem = null;
     }
     //#endregion
 }
