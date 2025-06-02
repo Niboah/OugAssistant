@@ -447,7 +447,7 @@
     #swipeMove() {
         const that = this;
         return (e) => {
-            if (that.swiperState == 2 || !that.swiperActiveItem) return;
+            if (!that.swiperActiveItem) return;
             that.currentX = e.clientX;
             that.diffX = that.currentX - that.startX;
             that.#handleSwipe(that.swiperActiveItem, that.diffX);
