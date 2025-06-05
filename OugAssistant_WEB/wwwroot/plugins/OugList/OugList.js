@@ -53,11 +53,11 @@
 
 
             .ouglist-item.swiped-left {
-                transform: translateX(-2rem);
+                transform: translateX(-6rem);
             }
 
             .ouglist-item.swiped-right {
-                transform: translateX(2rem);
+                transform: translateX(6rem);
             }
 
             .ouglist-btn-remove {
@@ -65,7 +65,7 @@
                 top: 0;
                 right: 0;
                 height: 100%;
-                width: 2rem;
+                width: 6rem;
                 background: red;
                 border: none;
                 cursor: pointer;
@@ -86,7 +86,7 @@
                 top: 0;
                 left: 0;
                 height: 100%;
-                width: 2rem;
+                width: 6rem;
                 background: green;
                 border: none;
                 cursor: pointer;
