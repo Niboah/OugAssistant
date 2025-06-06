@@ -1,54 +1,53 @@
 ﻿@model OugAssistant_WEB.Models.Planning.TaskViewModel
 @using OugAssistant.Features.Planning.Model;
 
-<div id="task_container" class="h-100 col-lg-4 col-sm-12">
-	<oug-list id="ouglist-tasklist">
-		@foreach (var item in Model.TaskList)
-		{
-			<li class="list-group-item" data-taskid="@(item.Id)">
-				<div class="m-2">
-					<div class="row align-items-center">
-						<div class="col-8 d-flex align-items-center">
-							<h4 class="mb-0"><strong>@item.Name</strong></h4>
-						</div>
-						<div class="col-4 text-end">
-							🎯 @item.Goal.Name
-						</div>
+<oug-list id="ouglist-tasklist">
+	@foreach (var item in Model.TaskList)
+	{
+		<li class="list-group-item" data-taskid="@(item.Id)">
+			<div class="m-2">
+				<div class="row align-items-center">
+					<div class="col-8 d-flex align-items-center">
+						<h4 class="mb-0"><strong>@item.Name</strong></h4>
 					</div>
-
-					<div class="row mt-2">
-						<div class="col-4">
-							@switch (item)
-							{
-								case OugMission m:
-									<div>
-										📅 @m.DeadLine
-									</div>
-									break;
-								case OugEvent e:
-									<div class="d-flex flex-column justify-content-between">
-										<span>📍 @e.Place</span>
-										<span>⏰ @e.EventDateTime</span>
-									</div>
-									break;
-								case OugRoutine r:
-									<div>
-										<i class="bi bi-repeat me-1"></i> Veces por semana: @r.WeekTimes?.Length ?? 0
-									</div>
-									break;
-							}
-						</div>
-						<div class="col-8">
-							ℹ️ @item.Description
-						</div>
+					<div class="col-4 text-end">
+						🎯 @item.Goal.Name
 					</div>
-
 				</div>
 
-			</li>
-		}
-	</oug-list>
-</div>
+				<div class="row mt-2">
+					<div class="col-4">
+						@switch (item)
+						{
+							case OugMission m:
+								<div>
+									📅 @m.DeadLine
+								</div>
+								break;
+							case OugEvent e:
+								<div class="d-flex flex-column justify-content-between">
+									<span>📍 @e.Place</span>
+									<span>⏰ @e.EventDateTime</span>
+								</div>
+								break;
+							case OugRoutine r:
+								<div>
+									<i class="bi bi-repeat me-1"></i> Veces por semana: @r.WeekTimes?.Length ?? 0
+								</div>
+								break;
+						}
+					</div>
+					<div class="col-8">
+						ℹ️ @item.Description
+					</div>
+				</div>
+
+			</div>
+
+		</li>
+	}
+</oug-list>
+
 
 
 <div class="modal fade" id="taskModal" tabindex="-1" aria-labelledby="taskModalLabel" aria-hidden="true">

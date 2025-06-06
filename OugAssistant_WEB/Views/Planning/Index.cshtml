@@ -6,7 +6,8 @@
 
 <div id="main_container" class="h-100 w-100 row mx-0">
 	<div id="calendar_container" class="h-100 col-lg-8 d-none d-md-block">
-		
 	</div>
-	@await Html.PartialAsync("_taskList", Model)
+	<div id="task_container" class="h-100 col-lg-4 col-sm-12">
+		@await Html.PartialAsync("_taskList", Model)
+	</div>
 </div>

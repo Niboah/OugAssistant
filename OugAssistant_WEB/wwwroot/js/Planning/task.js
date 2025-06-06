@@ -60,13 +60,14 @@ class TasksList {
             try {
                 let id;
                 if (e.target.classList.contains('ouglist-btn-add')) {
+                    const now = new Date();
                     this.inputTaskName.value = "";
                     this.inputTaskDescription.value = "";;
-                    this.inputTaskName.value = "";;
-                    this.selectTaskGoal.value = "";;
-                    this.inputTaskEventDateTime.value = "";
+                    this.inputTaskPriority.value = 0;
+                    this.selectTaskGoal.value = "";
+                    this.inputTaskEventDateTime.value = now.toISOString().slice(0, 16); ;
                     this.inputTaskEventPlace.value = "";
-                    this.inputTaskMissionDeadLine.value = "";
+                    this.inputTaskMissionDeadLine.value = now.toISOString().slice(0, 16);
 
                     this.tasktype.forEach(el => el.classList.remove('active'));
                     this.taskTypeContent.forEach(el => el.classList.remove('active', 'show'));
@@ -82,7 +83,7 @@ class TasksList {
 
                         this.inputTaskName.value = task.name;
                         this.inputTaskDescription.value = task.description;
-                        this.inputTaskName.value = task.priority;
+                        this.inputTaskPriority.value = task.priority;
                         this.selectTaskGoal.value = task.goalId;
 
                         this.tasktype.forEach(el => el.classList.remove('active'));
@@ -226,8 +227,9 @@ class TasksList {
                     //#endregion
 
                 }
-
+                that.refresh();
                 that.taskmodal.hide();
+                
             } catch (ex) {
                 console.error(ex);
             }
@@ -438,6 +440,13 @@ class TasksList {
 
     finishTask(id) {
         if (id) return ajaxCall('/api/Task/Finish/' + id, 'PATCH');
+    }
+
+    refresh() {
+        ajaxCall('/Planning/TaskList', 'GET')
+            .then(html => {
+                document.getElementById('task_container').innerHTML = html;
+            });
     }
 
     //#endregion

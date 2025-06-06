@@ -30,4 +30,15 @@ public class PlanningController : Controller
         _logger.LogInformation("GoalList " + JsonSerializer.Serialize(taskViewModel.GoalList));
         return View(taskViewModel);
     }
+
+    public IActionResult TaskList() {
+        _logger.LogInformation("PlanningController Index");
+
+        TaskViewModel taskViewModel = new TaskViewModel();
+        taskViewModel.TaskList = _context.OugTasks.Where(x => x.FinishDateTime == null).ToList();
+        _logger.LogInformation("TaskList " + JsonSerializer.Serialize(taskViewModel.TaskList));
+        taskViewModel.GoalList = _context.OugGoal.ToList();
+        _logger.LogInformation("GoalList " + JsonSerializer.Serialize(taskViewModel.GoalList));
+        return PartialView("_taskList", taskViewModel);
+    }
 }
