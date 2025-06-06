@@ -432,32 +432,35 @@
         return (e) => {
             const item = e.target.closest('li div.ouglist-item');
             if (!item || !that.ul.contains(item)) return;
-            if (that.swiperActiveItem && that.swiperActiveItem != item) {
+            if (that.swiperActiveItem && that.swiperActiveItem.parentElement.dataset.taskid != item.parentElement.dataset.taskid) {
                 that.#resetSwipe(that.swiperActiveItem);
-                that.swiperState = 0;
             }
             that.swiperActiveItem = item;
             that.startX = e.clientX;
             that.currentX = e.clientX;
             that.diffX = 0;
-            that.swiperState = that.swiperState == 2 ? 0 : that.swiperState;
+            that.swiperState = that.swiperState == 0 ? 2 : that.swiperState;
         }
     }
 
     #swipeMove() {
         const that = this;
         return (e) => {
-            if (!that.swiperActiveItem) return;
+            if (that.diffX!=0 || !that.swiperActiveItem || that.swiperState==0) return;
             that.currentX = e.clientX;
-            that.diffX = that.currentX - that.startX;
-            that.#handleSwipe(that.swiperActiveItem, that.diffX);
+            const tempDiff = that.currentX - that.startX;
+            if (Math.abs(tempDiff) > that.swipeDistance) {
+                that.diffX = tempDiff;
+                that.#handleSwipe(that.swiperActiveItem, that.diffX);
+            }
+                
         }
     }
 
     #swipeUp() {
         const that = this;
         return (e) => {
-            that.swiperActiveItem = null;
+            that.swiperState == 2 ? 0 : that.swiperState;
         }
     }
 
@@ -533,26 +536,29 @@
     #handleSwipe(item, diffX) {
         const li = item.closest('li');
         if (diffX < -this.swipeDistance) {
-            if (this.swiperState == 0) this.swiperState = -1;
-            else if (this.swiperState == 1) this.swiperState = 2;
+            if (this.swiperState == 2) this.swiperState = -1;
+            else if (this.swiperState == 1) this.swiperState = 0;
         } else if (diffX > this.swipeDistance) {
-            if (this.swiperState == 0) this.swiperState = 1;
-            else if (this.swiperState == -1) this.swiperState = 2;
-        }
+            if (this.swiperState == 2) this.swiperState = 1;
+            else if (this.swiperState == -1) this.swiperState = 0;
+        } 
 
         if (this.swiperState == -1) {
             item.classList.add('swiped-left');
         } else if (this.swiperState == 1) {
             item.classList.add('swiped-right');
-        } else if (this.swiperState == 2) {
+        } else if (this.swiperState == 0) {
             this.#resetSwipe(item);
         }
+
+        this.swiperState == 2 ? 0 : this.swiperState;
     }
 
     #resetSwipe(item) {
         item.classList.remove('swiped-right');
         item.classList.remove('swiped-left');
         this.swiperActiveItem = null;
+        this.swiperState = 0;
     }
     //#endregion
 }
