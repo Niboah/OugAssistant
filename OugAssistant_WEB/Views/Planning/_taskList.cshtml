@@ -1,5 +1,6 @@
 ﻿@model OugAssistant_WEB.Models.Planning.TaskViewModel
 @using OugAssistant.Features.Planning.Model;
+@using OugAssistant_APP.DTO.Planning
 
 <oug-list id="ouglist-tasklist">
 	@foreach (var item in Model.TaskList)
@@ -19,18 +20,18 @@
 					<div class="col-4">
 						@switch (item)
 						{
-							case OugMission m:
+							case MissionAPIout m:
 								<div>
 									📅 @m.DeadLine
 								</div>
 								break;
-							case OugEvent e:
+							case EventAPIout e:
 								<div class="d-flex flex-column justify-content-between">
 									<span>📍 @e.Place</span>
 									<span>⏰ @e.EventDateTime</span>
 								</div>
 								break;
-							case OugRoutine r:
+							case RoutineAPIout r:
 								<div>
 									<i class="bi bi-repeat me-1"></i> Veces por semana: @r.WeekTimes?.Length ?? 0
 								</div>

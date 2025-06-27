@@ -1,12 +1,13 @@
 
 using OugAssistant.Features.Planning.Model;
+using OugAssistant_APP.DTO.Planning;
 
 namespace OugAssistant_WEB.Models.Planning
 {
     public class TaskViewModel
     {
-        public List<OugTask> TaskList { get; set; }
-        public List<OugGoal> GoalList { get; set; }
+        public IEnumerable<TaskAPIout> TaskList { get; set; }
+        public IEnumerable<GoalAPIout> GoalList { get; set; }
         public HashSet<TimeOnly>[] WeekTimes { get; set; }
 
         public TaskViewModel() { }

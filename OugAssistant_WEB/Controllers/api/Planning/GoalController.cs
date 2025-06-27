@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OugAssistant.Features.Planning.Model;
+using OugAssistant_APP.DTO.Planning;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
@@ -13,84 +14,63 @@ namespace OugAssistant_WEB.Controllers.api.Planning;
 public class GoalController : ControllerBase
 {
 
-    private readonly OugAssistant_DB.Features.Planning _context;
-
-    public GoalController(OugAssistant_DB.Features.Planning context)
+    private readonly OugAssistant_APP.Interfaces.Planning.IGoalServices _goalServices;
+    public GoalController(OugAssistant_APP.Interfaces.Planning.IGoalServices goalServices)
     {
-        _context = context;
-    }
-
-    public class GoalDto
-    {
-        public required string Name { get; set; }
-        public required string Description { get; set; }
+        _goalServices = goalServices;
     }
 
     // GET: api/Goal
     [HttpGet]
     public async Task<ActionResult<IEnumerable<OugGoal>>> GetGoals()
     {
-        return await _context.OugGoal
-            .ToListAsync();
+        var result = await _goalServices.GetAllOugGoalAsync();
+        return Ok(result);
     }
 
     // GET: api/Goal/id
     [HttpGet("{id}")]
     public async Task<ActionResult<OugGoal>> GetGoal(Guid id)
     {
-        var goal = await _context.OugGoal.FindAsync(id);
+        var goal = await _goalServices.GetOugGoalByIdAsync(id);
 
         if (goal == null)
         {
             return NotFound();
         }
 
-        return goal;
+        return Ok(goal);
     }
 
     // POST: api/Goal
     [HttpPost]
-    public async Task<ActionResult<OugGoal>> CreateGoal([FromBody] GoalDto dto)
+    public async Task<ActionResult<OugGoal>> CreateGoal([FromBody] GoalAPIin goal)
     {
-        OugGoal goal = new OugGoal(dto.Name, dto.Description);
-
-        _context.OugGoal.Add(goal);
-        await _context.SaveChangesAsync();
-
+        await _goalServices.AddOugGoalAsync(goal);
         return await GetGoal(goal.Id);
     }
-
+    
+    // POST: api/Goal/Finish/id
+    [HttpPost("Finish/{id}")]
+    public async Task<ActionResult<bool>> FinishGoal(Guid id)
+    {
+       return await _goalServices.FinishGoal(id);
+    }
 
     // PATCH: api/Goal/id
     [HttpPatch("{id}")]
-    public async Task<ActionResult<OugGoal>> UpdateGoal(Guid id,[FromBody] JsonElement updates)
+    public async Task<ActionResult<OugGoal>> UpdateGoal(Guid id, [FromBody] GoalAPIin goal)
     {
-
-        var goal = _context.OugGoal.FirstOrDefault(g => g.Id == id);
-        if (goal == null) return NotFound();
-
-        if (updates.TryGetProperty("email", out var name))
-            goal.Name = name.GetString();
-
-        if (updates.TryGetProperty("name", out var description))
-            goal.Description = description.GetString();
-
+        if (id != goal.Id) return BadRequest();
+        await _goalServices.UpdateOugGoalAsync(goal);
         return Ok(goal);
     }
 
     // DELETE: api/Goal/id
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteGoal(Guid id)
+    public async Task<ActionResult<bool>> DeleteGoal(Guid id)
     {
-        var goal = await _context.OugGoal.FindAsync(id);
-        if (goal == null)
-        {
-            return NotFound();
-        }
-
-        _context.OugGoal.Remove(goal);
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        return BadRequest();
+        return Ok(await _goalServices.DeleteOugGoalAsync(id));
     }
 }

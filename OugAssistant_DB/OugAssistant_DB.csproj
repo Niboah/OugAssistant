@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OugAssistant\OugAssistant.csproj" />
+    <ProjectReference Include="..\OugAssistant_APP\OugAssistant_APP.csproj" />
   </ItemGroup>
 
 </Project>

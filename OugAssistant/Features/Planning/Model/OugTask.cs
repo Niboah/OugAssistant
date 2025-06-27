@@ -36,7 +36,7 @@ public abstract class OugTask
     public bool Finish()
     {
         FinishDateTime = DateTime.Now;
-        return Goal.CheckGoal();
+        return Goal.ArchiveGoal();
     }
 }
 

@@ -4,40 +4,44 @@ using OugAssistant_WEB.Models.Planning;
 using OugAssistant.Features.Planning.Model;
 using System.Diagnostics;
 using System.Text.Json;
+using OugAssistant_APP.Interfaces.Planning;
+using OugAssistant_APP.Sevices.Planning;
 
 namespace OugAssistant_WEB.Controllers.web.Planning;
 
 public class PlanningController : Controller
 {
-    private readonly OugAssistant_DB.Features.Planning _context;
+    private readonly ITaskServices _taskServices;
+    private readonly IGoalServices _goalServices;
     private readonly ILogger _logger;
 
-    public PlanningController(OugAssistant_DB.Features.Planning context, ILogger<PlanningController> logger)
+    public PlanningController(ITaskServices taskServices, IGoalServices goalServices, ILogger<PlanningController> logger)
     {
-        _context = context;
+        _taskServices = taskServices;
+        _goalServices = goalServices;
         _logger = logger;
         _logger.LogDebug(1, "NLog injected into PlanningController");
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         _logger.LogInformation("PlanningController Index");
 
         TaskViewModel taskViewModel = new TaskViewModel();
-        taskViewModel.TaskList = _context.OugTasks.Where(x=>x.FinishDateTime==null).ToList();
+        
+        taskViewModel.TaskList = await _taskServices.GetAllOugTaskAsync();
         _logger.LogInformation("TaskList " + JsonSerializer.Serialize(taskViewModel.TaskList) );
-        taskViewModel.GoalList = _context.OugGoal.ToList();
+        taskViewModel.GoalList = await _goalServices.GetAllOugGoalAsync();
         _logger.LogInformation("GoalList " + JsonSerializer.Serialize(taskViewModel.GoalList));
         return View(taskViewModel);
     }
 
-    public IActionResult TaskList() {
+    public async Task<IActionResult> TaskList() {
         _logger.LogInformation("PlanningController Index");
-
         TaskViewModel taskViewModel = new TaskViewModel();
-        taskViewModel.TaskList = _context.OugTasks.Where(x => x.FinishDateTime == null).ToList();
+        taskViewModel.TaskList = await _taskServices.GetAllOugTaskAsync();
         _logger.LogInformation("TaskList " + JsonSerializer.Serialize(taskViewModel.TaskList));
-        taskViewModel.GoalList = _context.OugGoal.ToList();
+        taskViewModel.GoalList = await _goalServices.GetAllOugGoalAsync();
         _logger.LogInformation("GoalList " + JsonSerializer.Serialize(taskViewModel.GoalList));
         return PartialView("_taskList", taskViewModel);
     }

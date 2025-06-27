@@ -11,7 +11,7 @@ using OugAssistant_DB.Features;
 
 namespace OugAssistant_DB.Migrations
 {
-    [DbContext(typeof(Planning))]
+    [DbContext(typeof(PlanningDBContext))]
     [Migration("20250510170644_RemakeModel6")]
     partial class RemakeModel6
     {

@@ -10,7 +10,7 @@ using OugAssistant_DB.Features;
 
 namespace OugAssistant_DB.Migrations
 {
-    [DbContext(typeof(Planning))]
+    [DbContext(typeof(PlanningDBContext))]
     partial class PlanningModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
@@ -32,11 +32,19 @@ namespace OugAssistant_DB.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Level")
+                        .HasColumnType("int");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<Guid?>("ParentGoalId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentGoalId");
 
                     b.ToTable("OugGoal");
                 });
@@ -112,6 +120,15 @@ namespace OugAssistant_DB.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.HasDiscriminator().HasValue("Routine");
+                });
+
+            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugGoal", b =>
+                {
+                    b.HasOne("OugAssistant.Features.Planning.Model.OugGoal", "ParentGoal")
+                        .WithMany()
+                        .HasForeignKey("ParentGoalId");
+
+                    b.Navigation("ParentGoal");
                 });
 
             modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugTask", b =>

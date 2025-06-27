@@ -32,7 +32,7 @@ class TasksList {
 
         //region goalform
         document.getElementById('selectTaskGoal').onchange = this.selectTaskGoalOnChange;
-        document.getElementById('btnSaveGoal').onclick = this.saveTask;
+        document.getElementById('btnSaveGoal').onclick = this.saveGoal;
         //#endregion
 
 

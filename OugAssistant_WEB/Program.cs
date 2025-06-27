@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using NLog;
 using NLog.Web;
-using static OugAssistant_DB.Features.Planning;
+using static OugAssistant_DB.Features.PlanningDBContext;
 
 namespace OugAssistant_WEB;
 
@@ -26,7 +26,7 @@ public class Program
 
             builder.Services.AddMvc();           // Add MVC services (MVC controllers, views, etc.)
 
-            builder.Services.AddDbContext<OugAssistant_DB.Features.Planning>(options =>
+            builder.Services.AddDbContext<OugAssistant_DB.Features.PlanningDBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("PlanningConnection") ?? throw new InvalidOperationException("Connection string 'PlanningConnection' not found.")));
 
             // NLog: Setup NLog for Dependency injection
