@@ -5,29 +5,10 @@
 class GoalList {
     constructor(bootstrap) {
         this.goallist = document.getElementById('ouglist-goallist');
-        //this.goallist.onClickItem = this.openTask;
-        //this.goallist.onClickAdd = this.openTask;
-        //this.goallist.onClickRemove = this.eliminateTask;
-        //this.goallist.onClickConfirm = this.confirmTask;
-
-        //#region taskform
-        //this.selectedTaskId;
-
-        //this.inputTaskName = document.getElementById('inputTaskName');
-        //this.inputTaskDescription = document.getElementById('inputTaskDescription');
-        //this.inputTaskPriority = document.getElementById('inputTaskPriority');
-        //this.selectTaskGoal = document.getElementById('selectTaskGoal');
-
-        //this.tasktype = document.querySelectorAll('.taskType');
-        //this.taskTypeContent = document.querySelectorAll('.taskTypeContent');
-
-        //this.inputTaskEventDateTime = document.getElementById('inputTaskEventDateTime');
-        //this.inputTaskEventPlace = document.getElementById('inputTaskEventPlace');
-
-        //this.inputTaskMissionDeadLine = document.getElementById('inputTaskMissionDeadLine');
-
-        //document.getElementById('btnSaveTask').onclick = this.saveTask;
-        //#endregion
+        this.goallist.onClickItem = this.openGoal;
+        this.goallist.onClickAdd = this.openGoal;
+        this.goallist.onClickRemove = this.eliminateGoal;
+        this.goallist.enableSwiper = false;
 
     }
 
@@ -41,6 +22,28 @@ class GoalList {
 
     //#region actions
 
+    get openGoal() {
+        const that = this;
+        return async (e, item) => {
+            try {
+                let id;
+                if (e.target.classList.contains('ouglist-btn-add')) {
+                    
+
+                } else if (item) {
+                    id = item.dataset.goalId;
+                    if (id) {
+                        const goal = await this.readGoal(id);
+
+                    }
+                }
+
+                that.goalmodal.show();
+            } catch (ex) {
+                console.error(ex);
+            }
+        }
+    }
 
     //#endregion
 
@@ -78,4 +81,4 @@ class GoalList {
 let goalList;
 window.addEventListener('DOMContentLoaded', () => {
     goalList = new GoalList();
-})();
+});

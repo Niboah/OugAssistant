@@ -43,6 +43,6 @@ public class PlanningController : Controller
         _logger.LogInformation("TaskList " + JsonSerializer.Serialize(taskViewModel.TaskList));
         taskViewModel.GoalList = await _goalServices.GetAllOugGoalAsync();
         _logger.LogInformation("GoalList " + JsonSerializer.Serialize(taskViewModel.GoalList));
-        return PartialView("_taskList", taskViewModel);
+        return PartialView("Task/Task", taskViewModel);
     }
 }

@@ -7,10 +7,10 @@
 
 <div id="main_container" class="h-100 w-100 row mx-0">
 	<div id="task_container" class="h-100 col">
-		@await Html.PartialAsync("_taskList", Model)
+		@await Html.PartialAsync("Task/Task", Model)
 	</div>
 	<div id="goal_container" class="h-100 col">
-		@await Html.PartialAsync("_goalList", Model)
+		@await Html.PartialAsync("Goal/Goal", Model)
 	</div>
 </div>
 

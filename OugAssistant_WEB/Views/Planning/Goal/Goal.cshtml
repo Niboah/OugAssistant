@@ -1,0 +1,6 @@
+﻿@model OugAssistant_WEB.Models.Planning.PlanningViewModel
+
+@await Html.PartialAsync("Goal/_goalList", Model)
+@await Html.PartialAsync("Goal/_goalModal", Model)
+
+<script src="~/js/Planning/goal.js"></script>

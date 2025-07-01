@@ -1,0 +1,28 @@
+﻿@model OugAssistant_WEB.Models.Planning.PlanningViewModel
+
+<oug-list id="ouglist-goallist" title="GoalList">
+	@foreach (var item in Model.GoalList)
+	{
+		<li class="list-group-item" data-taskid="@(item.Id)">
+			<div class="m-2">
+				<div class="row align-items-center">
+					<div class="col-8 d-flex align-items-center">
+						<h4 class="mb-0"><strong>@item.Name</strong></h4>
+					</div>
+					<div class="col-4 text-end">
+						@item.Tasks.Count()
+					</div>
+				</div>
+
+				<div class="row mt-2">
+					<div class="col-4">
+						@item.Level
+					</div>
+					<div class="col-8">
+						@item.Description
+					</div>
+				</div>
+			</div>
+		</li>
+	}
+</oug-list>

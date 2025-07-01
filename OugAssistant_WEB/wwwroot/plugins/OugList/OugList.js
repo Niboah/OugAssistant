@@ -15,28 +15,31 @@
             const template = document.createElement('template');
             template.innerHTML = `
         <style>
-            .ouglist-container {
+            .ouglist-container_${this.id} {
                 position: relative;
                 height: 100%;
-                padding: 0 1.5rem;
+                padding: 0 1.5rem 0 0.5rem;;
                 box-sizing: border-box;
                 user-select: none;
+                display: flex;
+                flex-direction: column;
+
             }
 
-            .ouglist-wrapper {
+            .ouglist-wrapper_${this.id} {
                 height: 100%;
                 overflow: auto;
                 border: solid 1px;
                 border-radius: 1rem 0rem 0rem 1rem;
             }
 
-            .ouglist-ul {
+            .ouglist-ul_${this.id} {
                 list-style: none;
                 padding-left: 0;
                 margin-top: 0;
             }
 
-            .ouglist-li {
+            .ouglist-li_${this.id} {
                 position: relative;
                 width: 100%;
                 display: flex;
@@ -44,7 +47,7 @@
                 overflow: hidden;
             }
 
-            .ouglist-item {
+            .ouglist-item_${this.id} {
                 width: 100%;
                 transition: transform 0.3s ease;
                 z-index: 1; 
@@ -53,15 +56,15 @@
             }
 
 
-            .ouglist-item.swiped-left {
+            .ouglist-item_${this.id}.swiped-left {
                 transform: translateX(-6rem);
             }
 
-            .ouglist-item.swiped-right {
+            .ouglist-item_${this.id}.swiped-right {
                 transform: translateX(6rem);
             }
 
-            .ouglist-btn-remove {
+            .ouglist-btn-remove_${this.id} {
                 position: absolute;
                 top: 0;
                 right: 0;
@@ -77,12 +80,12 @@
                 z-index: 0; 
             }
 
-            .ouglist-item.swiped-left ~ .ouglist-btn-remove {
+            .ouglist-item_${this.id}.swiped-left ~ .ouglist-btn-remove_${this.id} {
                 opacity: 1;
                 pointer-events: auto;
             }
 
-            .ouglist-btn-confirm {
+            .ouglist-btn-confirm_${this.id} {
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -98,12 +101,12 @@
                 z-index: 0;
             }
 
-            .ouglist-item.swiped-right ~ .ouglist-btn-confirm {
+            .ouglist-item_${this.id}.swiped-right ~ .ouglist-btn-confirm_${this.id} {
                 opacity: 1;
                 pointer-events: auto;
             }
 
-            .ouglist-btn-add {
+            .ouglist-btn-add_${this.id} {
                 bottom: 0;
                 right: 0;
                 position: absolute;
@@ -113,9 +116,9 @@
                 z-index:10;
             }
 
-            .ouglist-filter {
+            .ouglist-filter_${this.id} {
                 position: absolute;
-                top: 0;
+                top: ${this.title ? '3rem' : '0rem'} ;
                 right: 0;
                 width: 1.5rem;
                 height: 3rem;
@@ -128,13 +131,13 @@
                 z-index: 10;
             }
 
-            .ouglist-filter:hover {
+            .ouglist-filter_${this.id}:hover {
                 width: 3rem;
                 height: 3rem;
                 z-index: 10;
             }
 
-            .ouglist-filter.expanded {
+            .ouglist-filter_${this.id}.expanded {
                 width: 100%;
                 border-radius: 1rem;
                 display: flex;
@@ -142,24 +145,24 @@
                 z-index: 10;
             }
 
-            .ouglist-filter-icon {
+            .ouglist-filter-icon_${this.id} {
                 width: 1.5rem;
                 height: 100%;
                 border-radius: 0 1rem 1rem 0;
                 transition: width 0.1s ease-in-out, border-radius 0.1s ease-in-out;
             }
 
-            .ouglist-filter:hover .ouglist-filter-icon {
+            .ouglist-filter_${this.id}:hover .ouglist-filter-icon_${this.id} {
                 width: 3rem;
                 border-radius: 1rem;
             }
 
-            .ouglist-filter.expanded .ouglist-filter-icon {
+            .ouglist-filter_${this.id}.expanded .ouglist-filter-icon_${this.id} {
                 width: 3rem;
                 border-radius: 1rem 0 0 1rem;
             }
 
-            .ouglist-filter-icon label{
+            .ouglist-filter-icon_${this.id} label{
                 position: absolute;
                 left:0;
                 height:100%;
@@ -167,13 +170,13 @@
                 top: 0;
             }
 
-            .ouglist-filter:hover .ouglist-filter-icon label,
-            .ouglist-filter.expanded .ouglist-filter-icon label{
+            .ouglist-filter_${this.id}:hover .ouglist-filter-icon_${this.id} label,
+            .ouglist-filter_${this.id}.expanded .ouglist-filter-icon_${this.id} label{
                 position:initial;
                 font-size: 1.5rem;
             }
 
-            .ouglist-input-group {
+            .ouglist-input-group_${this.id} {
                 transition: width 0.1s ease-in-out, max-width 0.5s  ease-in-out, height 0.1s ease 1s;
                 max-width: 0;
                 width:0;
@@ -183,17 +186,17 @@
                 z-index: 1;
             }
 
-            .ouglist-input-group input,
-            .ouglist-input-group button {
+            .ouglist-input-group_${this.id} input,
+            .ouglist-input-group_${this.id} button {
                 height: 100%;
                 font-size: 1rem;
             }
 
-            .ouglist-input-group input{
+            .ouglist-input-group_${this.id} input{
                 width:100%;
             }
 
-            .ouglist-filter.expanded .ouglist-input-group {
+            .ouglist-filter_${this.id}.expanded .ouglist-input-group_${this.id} {
         
                 transition-delay: 0s;
                 max-width: 100%;
@@ -204,15 +207,15 @@
                 height: 100%;
             }
 
-            .ouglist-filter.expanded *:last-child{
+            .ouglist-filter_${this.id}.expanded *:last-child{
                 border-radius: 0 1rem 1rem 0;
             }
 
-            .ouglist-backdrop {
+            .ouglist-backdrop_${this.id} {
                 display: none;
             }
 
-            .ouglist-filter.expanded .ouglist-backdrop {
+            .ouglist-filter_${this.id}.expanded .ouglist-backdrop_${this.id} {
                 display: block;
                 position: fixed;
                 inset: 0;
@@ -222,19 +225,20 @@
             }
 
         </style>
-        <div class="ouglist-container">
-            <form class="ouglist-filter">
-                <button class="ouglist-filter-icon"><label>🔍</label></button>
-                <div class="ouglist-input-group">
+        <div class="ouglist-container_${this.id}">
+            ${this.title ? `<h2 class="ouglist-header_${this.id}">${this.title}</h2>` : ''}
+            <form class="ouglist-filter_${this.id}">
+                <button class="ouglist-filter-icon_${this.id}"><label>🔍</label></button>
+                <div class="ouglist-input-group_${this.id}">
                     <input type="text" placeholder="Filtrar por nombre"/>
                     <button type="submit">Filtrar</button>
                 </div>
-                <div class="ouglist-backdrop" ></div>
+                <div class="ouglist-backdrop_${this.id}" ></div>
             </form>
-            <div class="ouglist-wrapper">
-                <ul class=ouglist-ul></ul>
+            <div class="ouglist-wrapper_${this.id}">
+                <ul class="ouglist-ul_${this.id}"></ul>
             </div>
-            <button class="ouglist-btn-add">+</button>
+            <button class="ouglist-btn-add_${this.id}">+</button>
         </div>
         `;
             //#endregion 
@@ -242,17 +246,19 @@
             this.appendChild(template.content.cloneNode(true));
 
             //#region  Referencias
-            this.container = this.querySelector('.ouglist-container');
-            this.wrapper = this.querySelector('.ouglist-wrapper');
-            this.ul = this.querySelector('.ouglist-ul');
-            this.addButton = this.querySelector('.ouglist-btn-add');
-            this.filterForm = this.querySelector('.ouglist-filter');
-            this.filterForm.filterInputGroup = this.filterForm.querySelector('.ouglist-input-group');
-            this.filterForm.filterInput = this.filterForm.querySelector('input');
-            this.filterForm.backdrop = this.filterForm.querySelector('.ouglist-backdrop');
+            this.header = this.querySelector(`.ouglist-header_${this.id}`);
+            this.container = this.querySelector(`.ouglist-container_${this.id}`);
+            this.wrapper = this.querySelector(`.ouglist-wrapper_${this.id}`);
+            this.ul = this.querySelector(`.ouglist-ul_${this.id}`);
+            this.addButton = this.querySelector(`.ouglist-btn-add_${this.id}`);
+            this.filterForm = this.querySelector(`.ouglist-filter_${this.id}`);
+            this.filterForm.filterInputGroup = this.filterForm.querySelector(`.ouglist-input-group_${this.id}`);
+            this.filterForm.filterInput = this.filterForm.querySelector(`input`);
+            this.filterForm.backdrop = this.filterForm.querySelector(`.ouglist-backdrop_${this.id}`);
             //#endregion
 
             //#region Swiper
+            this._enableSwiper = true;
             this.swiperActiveItem = null;
             this.startX = 0;
             this.currentX = 0;
@@ -368,6 +374,14 @@
             }
         }
 
+        get enableSwiper() {
+            return this._enableSwiper
+        }
+        set enableSwiper(val) {
+            if (typeof val === 'boolean') {
+                this._enableSwiper = val;
+            } 
+        }
         //#endregion
 
         //#region private
@@ -378,7 +392,7 @@
             const fragment = document.createDocumentFragment(); // <--- buffer en memoria
             for (const [i, itemHTML] of items.entries()) {
                 itemHTML.innerHTML = this.#parseItem(itemHTML.innerHTML.trim());
-                itemHTML.classList.add('ouglist-li');
+                itemHTML.classList.add(`ouglist-li_${this.id}`);
                 fragment.appendChild(itemHTML); // aún no se toca el DOM real
             }
 
@@ -412,10 +426,10 @@
 
             this.ul.addEventListener('click', (e) => {
                 const item = e.target.closest('li');
-                if (item && e.target.classList.contains('ouglist-btn-remove')) {
+                if (item && e.target.classList.contains(`ouglist-btn-remove_${this.id}`)) {
                     if (this._onClickRemove(e, item))
                         this.#removeItem(item);
-                } else if (item && e.target.classList.contains('ouglist-btn-confirm')) {
+                } else if (item && e.target.classList.contains(`ouglist-btn-confirm_${this.id}`)) {
                     if (this._onClickConfirm(e, item))
                         this.#removeItem(item);
                 }
@@ -433,7 +447,8 @@
         #swipeDown() {
             const that = this;
             return (e) => {
-                const item = e.target.closest('li div.ouglist-item');
+                if (!that._enableSwiper) return;
+                const item = e.target.closest(`li div.ouglist-item_${that.id}`);
                 if (!item || !that.ul.contains(item)) return;
                 if (that.swiperActiveItem && that.swiperActiveItem.parentElement.dataset.taskid != item.parentElement.dataset.taskid) {
                     that.#resetSwipe(that.swiperActiveItem);
@@ -449,6 +464,7 @@
         #swipeMove() {
             const that = this;
             return (e) => {
+                if (!that._enableSwiper) return;
                 if (that.diffX != 0 || !that.swiperActiveItem || that.swiperState == 0) return;
                 that.currentX = e.clientX;
                 const tempDiff = that.currentX - that.startX;
@@ -463,20 +479,21 @@
         #swipeUp() {
             const that = this;
             return (e) => {
+                if (!that._enableSwiper) return;
                 that.swiperState == 2 ? 0 : that.swiperState;
             }
         }
 
 
         #parseItem(item) {
-            if (item.includes('ouglist-item')) return item;
+            if (item.includes(`ouglist-item_${this.id}`)) return item;
             return `
             
-            <div class="ouglist-item">
+            <div class="ouglist-item_${this.id}">
                 ${item}
             </div>
-            <button class="ouglist-btn-confirm">✓</button>
-            <button class="ouglist-btn-remove">X</button>
+            <button class="ouglist-btn-confirm_${this.id}">✓</button>
+            <button class="ouglist-btn-remove_${this.id}">X</button>
             `;
         }
 
@@ -487,7 +504,7 @@
             const li = document.createElement('li');
             li.dataset.ouglistitemid = this.itemid;
             this.itemid += 1;
-            li.classList.add('ouglist-li');
+            li.classList.add(`ouglist-li_${this.id}`);
             li.innerHTML = this.#parseItem(item);
 
             this.ul.insertBefore(li, this.ul.firstChild);
