@@ -481,6 +481,6 @@ class TasksList {
 }
 
 let taskList;
-(() => {
+window.addEventListener('DOMContentLoaded', () => {
     taskList = new TasksList();
-})();
+});

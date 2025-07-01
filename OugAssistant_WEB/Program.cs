@@ -1,6 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using NLog;
 using NLog.Web;
+using OugAssistant_APP.Interfaces.IPlanningBD;
+using OugAssistant_APP.Interfaces.Planning;
+using OugAssistant_APP.Sevices.Planning;
+using OugAssistant_DB.Features;
 using static OugAssistant_DB.Features.PlanningDBContext;
 
 namespace OugAssistant_WEB;
@@ -28,6 +32,10 @@ public class Program
 
             builder.Services.AddDbContext<OugAssistant_DB.Features.PlanningDBContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("PlanningConnection") ?? throw new InvalidOperationException("Connection string 'PlanningConnection' not found.")));
+
+            builder.Services.AddScoped<IPlanningDB, PlanningDB>();
+            builder.Services.AddScoped<IGoalServices, GoalServices>();
+            builder.Services.AddScoped<ITaskServices, TaskServices>();
 
             // NLog: Setup NLog for Dependency injection
             builder.Logging.ClearProviders();

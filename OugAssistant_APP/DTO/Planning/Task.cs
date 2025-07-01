@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,12 +16,13 @@ namespace OugAssistant_APP.DTO.Planning
         public TaskPriority Priority { get; set; }
         public GoalAPIout Goal { get; set; }
 
-        public TaskAPIout(OugTask task) {
+        public TaskAPIout(OugTask task, bool mapGoal = true, HashSet<Guid>? visited = null) {
             Id = task.Id;
             Name = task.Name;
             Description = task.Description;
             Priority = task.Priority;
-            Goal = new GoalAPIout(task.Goal);
+            if (mapGoal && task.Goal != null)
+                Goal = new GoalAPIout(task.Goal, visited);
         }
     }
 

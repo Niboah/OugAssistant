@@ -75,14 +75,14 @@ public class PlanningDB : IPlanningDB
     public async Task<IEnumerable<OugTask>> GetAllOugTaskAsync(Type? type = null)
     {
         if (type == null)
-            return await _db.OugTasks.ToListAsync();
+            return await _db.OugTasks.Include(t=>t.Goal).ToListAsync();
         else
-            return await _db.OugTasks.Where(t => t.GetType() == type).ToListAsync();
+            return await _db.OugTasks.Include(t => t.Goal).Where(t => t.GetType() == type).ToListAsync();
     }
 
     public async Task<OugTask?> GetOugTaskByIdAsync(Guid id, Type? type = null)
     {
-        var task = await _db.OugTasks.FindAsync(id);
+        var task = await _db.OugTasks.Include(t=>t.Goal).FirstOrDefaultAsync(t=>t.Id==id);
         if (task == null)
             return null;
         if (type == null || task.GetType() == type)
@@ -99,7 +99,7 @@ public class PlanningDB : IPlanningDB
 
     public async Task<bool> UpdateOugTaskAsync(OugTask item)
     {
-        var existing = await _db.OugTasks.FindAsync(item.Id);
+        var existing = await _db.OugTasks.Include(t => t.Goal).FirstOrDefaultAsync(t => t.Id == item.Id);
         if (existing == null)
             return false;
 
@@ -149,7 +149,7 @@ public class PlanningDB : IPlanningDB
 
     public async Task<bool> UpdateOugGoalAsync(OugGoal item)
     {
-        var existing = await _db.OugGoal.FindAsync(item.Id);
+        var existing = await GetOugGoalByIdAsync(item.Id);
         if (existing == null)
             return false;
 
@@ -165,7 +165,7 @@ public class PlanningDB : IPlanningDB
 
     public async Task<bool> DeleteOugGoalAsync(Guid id)
     {
-        var entity = await _db.OugGoal.FindAsync(id);
+        var entity = await GetOugGoalByIdAsync(id);
         if (entity != null)
         {
             _db.OugGoal.Remove(entity);

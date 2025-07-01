@@ -33,7 +33,7 @@ namespace Tests
 
             // Assert
             var viewResult = Assert.IsType<ViewResult>(result);
-            var model = Assert.IsType<TaskViewModel>(viewResult.Model);
+            var model = Assert.IsType<PlanningViewModel>(viewResult.Model);
             Assert.NotNull(model.TaskList);
             Assert.NotNull(model.GoalList);
         }
@@ -58,7 +58,7 @@ namespace Tests
 
             // Assert
             var partialResult = Assert.IsType<PartialViewResult>(result);
-            var model = Assert.IsType<TaskViewModel>(partialResult.Model);
+            var model = Assert.IsType<PlanningViewModel>(partialResult.Model);
             Assert.NotNull(model.TaskList);
             Assert.NotNull(model.GoalList);
         }

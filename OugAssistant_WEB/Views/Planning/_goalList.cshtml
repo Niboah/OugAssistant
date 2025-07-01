@@ -1,0 +1,71 @@
+﻿@model OugAssistant_WEB.Models.Planning.PlanningViewModel
+@using OugAssistant.Features.Planning.Model;
+@using OugAssistant_APP.DTO.Planning
+
+<oug-list id="ouglist-goallist">
+	@foreach (var item in Model.GoalList)
+	{
+		<li class="list-group-item " data-taskid="@(item.Id)">
+			<div class="m-2">
+				<div class="row align-items-center">
+					<div class="col-8 d-flex align-items-center">
+						<h4 class="mb-0"><strong>@item.Name</strong></h4>
+					</div>
+					<div class="col-4 text-end">
+						@item.Tasks.Count()
+					</div>
+				</div>
+
+				<div class="row mt-2">
+					<div class="col-4">
+						@item.Level
+					</div>
+					<div class="col-8">
+						@item.Description
+					</div>
+				</div>
+			</div>
+		</li>
+	}
+</oug-list>
+
+
+<div class="modal fade" id="goalModal" tabindex="-1" aria-labelledby="goalModalLabel" aria-hidden="true">
+	<div class="modal-dialog modal-dialog-scrollable p-3">
+		<div class="modal-content rounded-1 h-100">
+
+			<!-- Encabezado del modal -->
+			<div class="modal-header">
+				<h5 class="modal-title" id="goalModalLabel">Goal</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+			</div>
+
+			<!-- Cuerpo del modal -->
+			<div class="modal-body d-flex flex-column h-100">
+
+				<!--Name-->
+				<div class="form-floating mb-3">
+					<input type="text" class="form-control" id="inputGoalName" placeholder="Name">
+					<label for="inputGoalName">Goal Name</label>
+				</div>
+				<!--Description-->
+				<div class="flex-grow-1">
+					<div class="form-floating mb-3 h-100">
+						<textarea type="text" class="form-control h-100" id="inputGoalDescription" placeholder="Description"></textarea>
+						<label for="inputGoalDescription">Goal Description</label>
+					</div>
+				</div>
+			</div>
+
+			<!-- Pie del modal -->
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+				<button id="btnSaveGoal" type="button" class="btn btn-primary">Guardar Cambios</button>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+
+<script src="~/js/Planning/goal.js"></script>

@@ -27,7 +27,7 @@ public class PlanningController : Controller
     {
         _logger.LogInformation("PlanningController Index");
 
-        TaskViewModel taskViewModel = new TaskViewModel();
+        PlanningViewModel taskViewModel = new PlanningViewModel();
         
         taskViewModel.TaskList = await _taskServices.GetAllOugTaskAsync();
         _logger.LogInformation("TaskList " + JsonSerializer.Serialize(taskViewModel.TaskList) );
@@ -37,8 +37,8 @@ public class PlanningController : Controller
     }
 
     public async Task<IActionResult> TaskList() {
-        _logger.LogInformation("PlanningController Index");
-        TaskViewModel taskViewModel = new TaskViewModel();
+        _logger.LogInformation("PlanningController TaskList");
+        PlanningViewModel taskViewModel = new PlanningViewModel();
         taskViewModel.TaskList = await _taskServices.GetAllOugTaskAsync();
         _logger.LogInformation("TaskList " + JsonSerializer.Serialize(taskViewModel.TaskList));
         taskViewModel.GoalList = await _goalServices.GetAllOugGoalAsync();

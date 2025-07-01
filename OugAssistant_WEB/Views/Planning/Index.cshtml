@@ -1,13 +1,16 @@
-﻿@model OugAssistant_WEB.Models.Planning.TaskViewModel
+﻿@model OugAssistant_WEB.Models.Planning.PlanningViewModel
 
 @{
 	ViewData["Title"] = "Planning";
 }
+<script type="module" src="~/plugins/OugList/OugList.js"></script>
 
 <div id="main_container" class="h-100 w-100 row mx-0">
-	<div id="calendar_container" class="h-100 col-lg-8 d-none d-md-block">
-	</div>
-	<div id="task_container" class="h-100 col-lg-4 col-sm-12">
+	<div id="task_container" class="h-100 col">
 		@await Html.PartialAsync("_taskList", Model)
 	</div>
+	<div id="goal_container" class="h-100 col">
+		@await Html.PartialAsync("_goalList", Model)
+	</div>
 </div>
+
