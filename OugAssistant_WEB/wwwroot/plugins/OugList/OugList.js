@@ -70,7 +70,9 @@
                 right: 0;
                 height: 100%;
                 width: 6rem;
-                background: red;
+                background-image: linear-gradient(to right, rgba(255, 0, 0,0.12),
+                                                            rgba(255, 0, 0,1));
+                background-color: rgba(0,0,0,0);
                 border: none;
                 cursor: pointer;
 
@@ -91,7 +93,9 @@
                 left: 0;
                 height: 100%;
                 width: 6rem;
-                background: green;
+                background-image: linear-gradient(to right, rgba(0, 255, 0,1),
+                                                            rgba(0, 255, 0,0.12));
+                background-color: rgba(0,0,0,0);
                 border: none;
                 cursor: pointer;
 
@@ -113,7 +117,7 @@
                 height: 3rem;
                 width: 3rem;
                 border-radius: 1rem;
-                z-index:10;
+                z-index:5;
             }
 
             .ouglist-filter_${this.id} {
@@ -128,7 +132,7 @@
                 transition: width 0.1s ease-in-out;
                 overflow: hidden;
                 transform-origin: right;
-                z-index: 10;
+                z-index: 5;
             }
 
             .ouglist-filter_${this.id}:hover {
@@ -222,6 +226,11 @@
                 background: rgba(74, 144, 226, 0.2);
                 backdrop-filter: blur(10px);
                 z-index: -1;
+            }
+
+            .swipable{
+                border-left: solid 0.5rem rgba(0,255,0,0.1);
+                border-right: solid 0.5rem rgba(255,0,0,0.1);
             }
 
         </style>
@@ -380,6 +389,7 @@
         set enableSwiper(val) {
             if (typeof val === 'boolean') {
                 this._enableSwiper = val;
+                this.#render();
             } 
         }
         //#endregion
@@ -486,10 +496,21 @@
 
 
         #parseItem(item) {
-            if (item.includes(`ouglist-item_${this.id}`)) return item;
+            let isItem = item.includes(`ouglist-item_${this.id}`);
+            let isSwiper = this._enableSwiper;
+
+            if (isItem) {
+                if (isSwiper) {
+                    if (item.includes(`swipable`)) return item;
+                    else return item.replace(`ouglist-item_${this.id}`, `ouglist-item_${this.id} swipable`);
+                } else {
+                    return item.replace(`ouglist-item_${this.id} swipable`, `ouglist-item_${this.id}`);
+                }
+            }
+
             return `
             
-            <div class="ouglist-item_${this.id}">
+            <div class="ouglist-item_${this.id} ${isSwiper ? `swipable`:``}">
                 ${item}
             </div>
             <button class="ouglist-btn-confirm_${this.id}">✓</button>
