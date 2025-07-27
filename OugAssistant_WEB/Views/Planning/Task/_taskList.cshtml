@@ -17,22 +17,22 @@
 
 				<div class="row mt-2">
 					<div class="col-4">
-						@switch (item)
+						@switch (item.Type)
 						{
-							case MissionAPIout m:
+							case "OugMission":
 								<div>
-									📅 @m.DeadLine
+									📅 @item.DeadLine
 								</div>
 								break;
-							case EventAPIout e:
+							case "OugEvent":
 								<div class="d-flex flex-column justify-content-between">
-									<span>📍 @e.Place</span>
-									<span>⏰ @e.EventDateTime</span>
+									<span>📍 @item.Place</span>
+									<span>⏰ @item.EventDateTime</span>
 								</div>
 								break;
-							case RoutineAPIout r:
+							case "OugRoutine":
 								<div>
-									<i class="bi bi-repeat me-1"></i> Veces por semana: @r.WeekTimes?.Length ?? 0
+									<i class="bi bi-repeat me-1"></i> Veces por semana: @item.WeekTimes?.Length ?? 0
 								</div>
 								break;
 						}
@@ -47,3 +47,46 @@
 		</li>
 	}
 </oug-list>
+
+<template id="task-template">
+	<li class="list-group-item" data-taskid="">
+		<div class="m-2">
+			<div class="row align-items-center">
+				<div class="col-8 d-flex align-items-center">
+					<h4 class="mb-0"><strong class="task-name"></strong></h4>
+				</div>
+				<div class="col-4 text-end">
+					🎯 <span class="task-goal-name"></span>
+				</div>
+			</div>
+
+			<div class="row mt-2">
+				<div class="col-4">
+					<!-- Mission -->
+					<div class="task-type mission-type" hidden>
+						📅 <span class="task-deadline"></span>
+					</div>
+
+					<!-- Event -->
+					<div class="task-type event-type" hidden>
+						<div class="d-flex flex-column justify-content-between">
+							<span>📍 <span class="task-place"></span></span>
+							<span>⏰ <span class="task-datetime"></span></span>
+						</div>
+					</div>
+					
+
+					<!-- Routine -->
+					<div class="task-type routine-type" hidden>
+						<i class="bi bi-repeat me-1"></i>
+						Veces por semana: <span class="task-week-times">0</span>
+					</div>
+				</div>
+
+				<div class="col-8">
+					ℹ️ <span class="task-description"></span>
+				</div>
+			</div>
+		</div>
+	</li>
+</template>

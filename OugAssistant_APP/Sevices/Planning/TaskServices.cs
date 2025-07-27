@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,32 +37,15 @@ namespace OugAssistant_APP.Sevices.Planning
             });
 
             var ordered = orderByPriorityFirst
-                ? withDate.OrderBy(t => t.Task.Priority).ThenBy(t => t.Date)
-                : withDate.OrderBy(t => t.Date).ThenBy(t => t.Task.Priority);
+                ? withDate.OrderBy(t => t.Task.Priority).ThenBy(t => t.Date).Select(t => new TaskAPIout(t.Task))
+                : withDate.OrderBy(t => t.Date).ThenBy(t => t.Task.Priority).Select(t => new TaskAPIout(t.Task));
 
-            return ordered.Select(t => {
-                return t.Task switch
-                {
-                    OugEvent e => (TaskAPIout)new EventAPIout(e),
-                    OugMission m => (TaskAPIout)new MissionAPIout(m),
-                    OugRoutine r => (TaskAPIout)new RoutineAPIout(r),
-                    _ => throw new InvalidOperationException("Tipo de tarea no soportado.")
-                };
-             }).ToList();
+            return ordered.ToList();
         }
 
         public async Task<TaskAPIout?> GetOugTaskByIdAsync(Guid id, Type? type = null)
         {
             var task = await this._db.GetOugTaskByIdAsync(id, type);
-            switch (task)
-            {
-                case OugEvent e:
-                    return new EventAPIout(e);
-                case OugMission m:
-                    return new MissionAPIout(m);
-                case OugRoutine r:
-                    return new RoutineAPIout(r);
-            }
 
             return new TaskAPIout(task);
         }

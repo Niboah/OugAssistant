@@ -33,7 +33,7 @@ namespace OugAssistant_APP.DTO.Planning
                 visited.Add(goal.Id);
                 ParentGoal = goal.ParentGoal != null ? new GoalAPIout(goal.ParentGoal, visited) : null;
                 ChildGoals = goal.ChildGoals?.Select(g => new GoalAPIout(g, visited)).ToList() ?? new List<GoalAPIout>();
-                Tasks = goal.Tasks?.Select(t => new TaskAPIout(t, true, visited)).ToList() ?? new List<TaskAPIout>();
+                Tasks = goal.Tasks?.Select(t => new TaskAPIout(t, true, visited)).ToList();
             }
             else
             {

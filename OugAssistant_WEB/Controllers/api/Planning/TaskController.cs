@@ -21,14 +21,14 @@ public class TaskController : ControllerBase
     #region GET
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<OugTask>>> GetTasks()
+    public async Task<ActionResult<IEnumerable<TaskAPIout>>> GetTasks()
     {
         var tasks = await _taskServices.GetAllOugTaskAsync();
         return Ok(tasks);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<OugTask>> GetTask(Guid id)
+    public async Task<ActionResult<TaskAPIout>> GetTask(Guid id)
     {
         var task = await _taskServices.GetOugTaskByIdAsync(id);
         if (task == null) return NotFound();
@@ -41,7 +41,7 @@ public class TaskController : ControllerBase
 
     [Route("Event")]
     [HttpPost]
-    public async Task<ActionResult<OugTask>> CreateEvent([FromBody] EventAPIin task)
+    public async Task<ActionResult<TaskAPIout>> CreateEvent([FromBody] EventAPIin task)
     {
         if (task.Name == null || task.GoalId == null || task.EventDateTime == null)
             return BadRequest("Missing required fields for Event");
@@ -54,7 +54,7 @@ public class TaskController : ControllerBase
 
     [Route("Mission")]
     [HttpPost]
-    public async Task<ActionResult<OugTask>> CreateMission([FromBody] MissionAPIin task)
+    public async Task<ActionResult<TaskAPIout>> CreateMission([FromBody] MissionAPIin task)
     {
         if (task.Name == null || task.GoalId == null || task.DeadLine == null)
             return BadRequest("Missing required fields for Mission");
@@ -68,7 +68,7 @@ public class TaskController : ControllerBase
 
     [Route("Routine")]
     [HttpPost]
-    public async Task<ActionResult<OugTask>> CreateRoutine([FromBody] RoutineAPIin task)
+    public async Task<ActionResult<TaskAPIout>> CreateRoutine([FromBody] RoutineAPIin task)
     {
         if (task.Name == null || task.GoalId == null || task.WeekTimes == null)
             return BadRequest("Missing required fields for Routine");

@@ -1,19 +1,20 @@
 ﻿if (!document.OugList) {
     class OugList extends HTMLElement {
-        constructor() {
+        constructor(id=null) {
             super();
+            this.id = id ? id: this.id;
             this.itemid = 0;
             this.data = [];
             this.filteredData = [];
-
+            
             this._onClickItem = (el) => alert(el.dataset.data);
             this._onClickAdd = () => { this.#addItem(`<label>${this.data.length}</label>`); };
             this._onClickRemove = () => { return true };
             this._onClickConfirm = () => { return true };
 
             //#region Template
-            const template = document.createElement('template');
-            template.innerHTML = `
+            this.template = document.createElement('template');
+            this.template.innerHTML = `
         <style>
             .ouglist-container_${this.id} {
                 position: relative;
@@ -252,7 +253,7 @@
         `;
             //#endregion 
 
-            this.appendChild(template.content.cloneNode(true));
+            this.appendChild(this.template.content.cloneNode(true));
 
             //#region  Referencias
             this.header = this.querySelector(`.ouglist-header_${this.id}`);
@@ -286,9 +287,10 @@
          */
         connectedCallback() {
             console.log(`connectedCallback ${this.id}`);
-            this.#attachEventHandlers();
+            this.#parseExistingLI();
             this.#addObserver();
             this.#render();
+            this.#attachEventHandlers();
         }
         /**
          * Called each time the element is removed from the document.
@@ -392,6 +394,12 @@
                 this.#render();
             } 
         }
+
+        clean() {
+            this.data = [];
+            this.filteredData = []; 
+            this.ul.innerHTML = "";
+        }
         //#endregion
 
         //#region private
@@ -401,7 +409,7 @@
             this.ul.innerHTML = '';
             const fragment = document.createDocumentFragment(); // <--- buffer en memoria
             for (const [i, itemHTML] of items.entries()) {
-                itemHTML.innerHTML = this.#parseItem(itemHTML.innerHTML.trim());
+                itemHTML.innerHTML = this.#parseItem(itemHTML.innerHTML?.trim());
                 itemHTML.classList.add(`ouglist-li_${this.id}`);
                 fragment.appendChild(itemHTML); // aún no se toca el DOM real
             }
@@ -551,15 +559,13 @@
         }
 
         #addObserver() {
-            this.#parseExistingLI();
-
             // Observar cambios posteriores
             this.observer = new MutationObserver((mutationsList) => {
                 for (const mutation of mutationsList) {
                     if (mutation.type === 'childList') {
-                        const addedLis = Array.from(this.querySelectorAll('li'));
-                        this.data = addedLis
-                        this.#render();
+                        const existingLI = Array.from(this.querySelectorAll('li'));
+                        mutation.target.data = existingLI;
+                        mutation.target.#render();
                     }
                 }
             });

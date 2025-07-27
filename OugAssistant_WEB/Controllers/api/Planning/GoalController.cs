@@ -22,7 +22,7 @@ public class GoalController : ControllerBase
 
     // GET: api/Goal
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<OugGoal>>> GetGoals()
+    public async Task<ActionResult<IEnumerable<GoalAPIout>>> GetGoals()
     {
         var result = await _goalServices.GetAllOugGoalAsync();
         return Ok(result);
@@ -30,7 +30,7 @@ public class GoalController : ControllerBase
 
     // GET: api/Goal/id
     [HttpGet("{id}")]
-    public async Task<ActionResult<OugGoal>> GetGoal(Guid id)
+    public async Task<ActionResult<object>> GetGoal(Guid id)
     {
         var goal = await _goalServices.GetOugGoalByIdAsync(id);
 
@@ -44,7 +44,7 @@ public class GoalController : ControllerBase
 
     // POST: api/Goal
     [HttpPost]
-    public async Task<ActionResult<OugGoal>> CreateGoal([FromBody] GoalAPIin goal)
+    public async Task<ActionResult<object>> CreateGoal([FromBody] GoalAPIin goal)
     {
         await _goalServices.AddOugGoalAsync(goal);
         return await GetGoal(goal.Id);
@@ -59,7 +59,7 @@ public class GoalController : ControllerBase
 
     // PATCH: api/Goal/id
     [HttpPatch("{id}")]
-    public async Task<ActionResult<OugGoal>> UpdateGoal(Guid id, [FromBody] GoalAPIin goal)
+    public async Task<ActionResult<GoalAPIout>> UpdateGoal(Guid id, [FromBody] GoalAPIin goal)
     {
         if (id != goal.Id) return BadRequest();
         await _goalServices.UpdateOugGoalAsync(goal);

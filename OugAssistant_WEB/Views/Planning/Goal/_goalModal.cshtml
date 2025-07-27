@@ -14,7 +14,7 @@
 			<div class="modal-body d-flex flex-column h-100">
 
 				<div class="row h-100">
-					<div class="col">
+					<div class="col h-100 d-flex flex-column">
 						<!--Name-->
 						<div class="form-floating mb-3">
 							<input type="text" class="form-control" id="inputGoalName" placeholder="Name">
@@ -22,7 +22,7 @@
 						</div>
 						<!--Description-->
 						<div class="flex-grow-1">
-							<div class="form-floating mb-3">
+							<div class="form-floating mb-3 h-100">
 								<textarea type="text" class="form-control h-100" id="inputGoalDescription" placeholder="Description"></textarea>
 								<label for="inputGoalDescription">Goal Description</label>
 							</div>
@@ -32,45 +32,31 @@
 					<div class="col h-100">
 						<div class="d-flex flex-column h-100">
 							<!--ParentGoal-->
-							<div class="flex-shrink-1">
-								<div class="form-floating mb-3">
-									<input type="text" class="form-control" id="inputParentGoal" placeholder="Name" disabled>
-									<label for="inputParentGoal">Parent Goal</label>
+							<div class="flex-shrink-1 h-10">
+								<div class="form-floating mb-3 h-100">
+
+									<select id="inputParentGoal" class="form-select" aria-label="Parent goal" disabled>
+										<option selected>-</option>
+									</select>
+									<label for="inputParentGoal">Parent goal</label>
 								</div>
 							</div>
 
 							<!--ChildGoal-->
-							<div class="flex-grow-1 overflow-hidden">
-								<oug-list id="ouglist-ChildGoalList" title="ChildGoalList">
-									@foreach (var goal in Model.GoalList)
-									{
-										<li>
-											@goal.Name
-										</li>
-									}
-								</oug-list>
+							<div id="ChildGoalListWrapper" class="flex-grow-1 overflow-hidden h-25 my-1">
+								@* <oug-list id="ouglist-ChildGoalList" title="ChildGoalList">
+								</oug-list> *@
 							</div>
 
 
 							<!--GoalTasks-->
-							<div class="flex-grow-1 overflow-hidden">
-								<oug-list id="ouglist-GoalTasksList" title="GoalTasksList">
-									@foreach (var goal in Model.GoalList)
-									{
-										<li>
-											@goal.Name
-										</li>
-									}
-								</oug-list>
+							<div id="GoalTasksListWrapper" class="flex-grow-1 overflow-hidden h-25 my-1">
+								@* <oug-list id="ouglist-GoalTasksList" title="GoalTasksList">
+								</oug-list> *@
 							</div>
 						</div>
 					</div>
 				</div>
-
-
-
-
-
 			</div>
 
 			<!-- Pie del modal -->

@@ -14,7 +14,12 @@ namespace OugAssistant_APP.DTO.Planning
         public string Name { get; set; }
         public string Description { get; set; }
         public TaskPriority Priority { get; set; }
-        public GoalAPIout Goal { get; set; }
+        public GoalAPIout? Goal { get; set; }
+        public string Type { get; set; }
+        public DateTime? EventDateTime { get; set; }
+        public string? Place { get; set; }
+        public DateTime? DeadLine { get; set; }
+        public HashSet<TimeOnly>[]? WeekTimes { get; set; }
 
         public TaskAPIout(OugTask task, bool mapGoal = true, HashSet<Guid>? visited = null) {
             Id = task.Id;
@@ -23,63 +28,25 @@ namespace OugAssistant_APP.DTO.Planning
             Priority = task.Priority;
             if (mapGoal && task.Goal != null)
                 Goal = new GoalAPIout(task.Goal, visited);
-        }
-    }
 
-    public class EventAPIout : TaskAPIout
-    {
-        public EventAPIout(OugTask task) : base(task)
-        {
+            Type = task.GetType().Name;
+
             if (task is OugEvent ev)
             {
                 EventDateTime = ev.EventDateTime;
                 Place = ev.Place;
             }
-            else
-            {
-                EventDateTime = null;
-                Place = null;
-            }
-        }
-
-        public DateTime? EventDateTime { get; set; }
-        public string? Place { get; set; }
-    }
-
-    public class MissionAPIout : TaskAPIout
-    {
-        public MissionAPIout(OugTask task) : base(task)
-        {
             if (task is OugMission mission)
             {
                 DeadLine = mission.DeadLine;
             }
-            else
-            {
-                DeadLine = null;
-            }
-        }
-
-        public DateTime? DeadLine { get; set; }
-    }
-
-    public class RoutineAPIout : TaskAPIout
-    {
-        public RoutineAPIout(OugTask task) : base(task)
-        {
             if (task is OugRoutine routine)
             {
                 WeekTimes = routine.WeekTimes;
             }
-            else
-            {
-                WeekTimes = null;
-            }
         }
 
-        public HashSet<TimeOnly>[]? WeekTimes { get; set; }
     }
-
 
     public class TaskAPIin
     {
