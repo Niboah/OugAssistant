@@ -13,8 +13,7 @@ public class OugGoal
     public ICollection<OugTask> Tasks;
     public OugGoal? ParentGoal { get; set; }
     public int Level { get; protected set; }
-
-    public ICollection<OugGoal> ChildGoals;
+    public ICollection<OugGoal> ChildGoals { get; protected set; }  = new List<OugGoal>();
 
     public OugGoal() { }
     public OugGoal(string name, string description, OugGoal? parentGoal = null)

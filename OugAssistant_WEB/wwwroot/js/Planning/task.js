@@ -4,6 +4,10 @@
 
 class TasksList {
     constructor(bootstrap) {
+        this.init();
+    }
+
+    init() {
         this.tasklist = document.getElementById('ouglist-tasklist');
         this.tasklist.onClickItem = this.openTask;
         this.tasklist.onClickAdd = this.openTask;
@@ -84,7 +88,7 @@ class TasksList {
                         this.inputTaskName.value = task.name;
                         this.inputTaskDescription.value = task.description;
                         this.inputTaskPriority.value = task.priority;
-                        this.selectTaskGoal.value = task.goalId;
+                        this.selectTaskGoal.value = task.goal?.id;
 
                         this.tasktype.forEach(el => el.classList.remove('active'));
                         this.taskTypeContent.forEach(el => el.classList.remove('active', 'show'));
@@ -148,7 +152,7 @@ class TasksList {
                 let taskId = that.selectedTaskId;
 
                 let name = this.inputTaskName.value;
-                let description = this.inputTaskName.value;
+                let description = this.inputTaskDescription.value;
                 let priority = Number(this.inputTaskPriority.value);
                 let goalId = this.selectTaskGoal.value;
 
@@ -363,6 +367,7 @@ class TasksList {
 
     updateMission(id, name, description, priority, goalId, deadtime) {
         let body = {
+            "Id": id,
             "name": name,
             "description": description,
             "priority": priority,
@@ -394,6 +399,7 @@ class TasksList {
 
     updateEvent(id, name, description, priority, goalId, eventDateTime, place) {
         let body = {
+            "Id": id,
             "name": name,
             "description": description,
             "priority": priority,
@@ -425,6 +431,7 @@ class TasksList {
 
     updateRoutine(id, name, description, priority, goalId, weekTimes) {
         let body = {
+            "Id": id,
             "name": name,
             "description": description,
             "priority": priority,
@@ -446,6 +453,8 @@ class TasksList {
         ajaxCall('/Planning/TaskList', 'GET')
             .then(html => {
                 document.getElementById('task_container').innerHTML = html;
+
+                this.init();
             });
     }
 
@@ -477,6 +486,7 @@ class TasksList {
     //#endregion
 
     //#endregion
+
 
 }
 

@@ -3,7 +3,11 @@
  */
 
 class GoalList {
-    constructor(bootstrap) {
+    constructor() {
+        this.init();
+    }
+
+    init() {
         this.goallist = document.getElementById('ouglist-goallist');
         this.goallist.onClickItem = this.openGoal;
         this.goallist.onClickAdd = this.openGoal;
@@ -19,13 +23,16 @@ class GoalList {
 
         this.childGoalListwrapper = document.getElementById('ChildGoalListWrapper');
         this.goalTaskListwrapper = document.getElementById('GoalTasksListWrapper');
-        this.childGoalList = new OugList('ChildGoalList');
+        this.childGoalList = new OugList('ChildGoalList', false, false);
         this.childGoalList.enableSwiper = false;
-        this.goalTaskList = new OugList('GoalTasksList');
+        this.goalTaskList = new OugList('GoalTasksList', false, false);
         this.goalTaskList.enableSwiper = false;
         this.childGoalListwrapper.appendChild(this.childGoalList);
         this.goalTaskListwrapper.appendChild(this.goalTaskList);
         //#endregion
+
+        document.getElementById('btnSaveGoal').onclick = this.saveGoal;
+
     }
 
     //#region modal
@@ -65,12 +72,21 @@ class GoalList {
                 } else if (item) {
                     id = item.dataset.goalid;
                     if (id) {
-                        
+                        that.goalTaskList.clean();
+                        that.childGoalList.clean();
                         const goal = await this.readGoal(id);
                         that.inputGoalName.value = goal.name;
                         that.inputGoalDescription.value = goal.description;
-                        that.inputParentGoal.value = goal.inputParentGoal ? goal.inputParentGoal : '-';
+
+                        if (goal.parentGoal?.id) {
+                            const option = document.createElement("option");
+                            option.value = goal.parentGoal.id;
+                            option.text = goal.parentGoal.name;
+                            that.inputParentGoal.appendChild(option);
+                            that.inputParentGoal.value = goal.parentGoal?.id
+                        }
                         that.inputParentGoal.disabled = true;
+
                         for (let i = 0; i < goal.tasks.length; i++) {
                             const tempHTML = this.renderTask(goal.tasks[i]);
                             that.goalTaskList.appendChild(tempHTML);
@@ -91,16 +107,38 @@ class GoalList {
         }
     }
 
+
+    get saveGoal() {
+        const that = this;
+        return async () => {
+            let goalId = that.selectedGoalId;
+
+            let name = document.getElementById('inputGoalName').value;
+            let description = document.getElementById('inputGoalDescription').value;
+            let parentGoalId = document.getElementById('inputParentGoal').value;
+
+            if (goalId) {
+                await that.updateGoal(goalId,name, description, parentGoalId)
+            } else {
+               await that.createGoal(name, description, parentGoalId)
+            }
+            
+            that.refresh();
+            that.goalmodal.hide();
+        }
+    }
+
     //#endregion
 
     //#region api call
 
     //#region Goal
 
-    createGoal(name, description) {
+    createGoal(name, description, parentGoalId) {
         let body = {
-            "name": name,
-            "description": description
+            "Name": name,
+            "Description": description,
+            "ParentGoalId": parentGoalId
         }
         return ajaxCall('/api/Goal', 'POST', body)
             .then(result => {
@@ -114,12 +152,31 @@ class GoalList {
         return this.getGoals();
     }
 
-    updateGoal(id) {
-        if (id) return ajaxCall('/api/Goal/' + id, 'PATCH');
+    updateGoal(id, name, description, parentGoalId) {
+        let body = {
+            "Id" : id,
+            "Name": name,
+            "Description": description,
+            "ParentGoalId": parentGoalId
+        }
+        return ajaxCall('/api/Goal/'+id, 'PATCH', body)
+            .then(result => {
+                alert(JSON.stringify(result));
+                return result;
+            });;
     }
+    
 
     getGoals() {
         return ajaxCall('/api/Goal', 'GET');
+    }
+
+    refresh() {
+        ajaxCall('/Planning/GoalList', 'GET')
+            .then(html => {
+                document.getElementById('goal_container').innerHTML = html;
+                this.init();
+            });
     }
 
     //#endregion
@@ -153,6 +210,22 @@ class GoalList {
             routineEl.hidden = false;
             routineEl.querySelector('.task-week-times').textContent = task.weekTimes?.length || 0;
         }
+
+        return clone;
+    }
+
+
+    renderGoal(goal) {
+        const template = document.getElementById('goal-template');
+        const clone = template.content.cloneNode(true);
+
+        const li = clone.querySelector('li');
+        li.dataset.goalid = goal.id;
+
+        clone.querySelector('.goal-name').textContent = goal.name;
+        clone.querySelector('.goal-taskCount').textContent = goal.tasks?.length;
+        clone.querySelector('.goal-description').textContent = goal.description;
+        clone.querySelector('.goal-level').textContent = goal.level;
 
         return clone;
     }

@@ -126,6 +126,16 @@ public class PlanningDB : IPlanningDB
         return false;
     }
 
+    public async Task<bool> FinishOugTaskAsync(Guid id)
+    {
+        var task = await _db.OugTasks.Include(t => t.Goal).FirstOrDefaultAsync(t=>t.Id==id);
+        if (task == null)
+            return false;
+        task.Finish();
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<IEnumerable<OugGoal>> GetAllOugGoalAsync()
     {
         return await _db.OugGoal
@@ -137,6 +147,8 @@ public class PlanningDB : IPlanningDB
     {
         return await _db.OugGoal
             .Include(g => g.Tasks)
+            .Include(g => g.ParentGoal)
+            .Include(g => g.ChildGoals)
             .FirstOrDefaultAsync(g => g.Id == id);
     }
 

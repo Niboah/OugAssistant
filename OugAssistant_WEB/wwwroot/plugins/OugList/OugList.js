@@ -1,12 +1,15 @@
 ﻿if (!document.OugList) {
     class OugList extends HTMLElement {
-        constructor(id=null) {
+        constructor(id = null, enableAddButton = true, enableFilter =true) {
             super();
             this.id = id ? id: this.id;
             this.itemid = 0;
             this.data = [];
             this.filteredData = [];
-            
+
+            this.enableAddButton = enableAddButton;
+            this.enableFilter = enableFilter;
+
             this._onClickItem = (el) => alert(el.dataset.data);
             this._onClickAdd = () => { this.#addItem(`<label>${this.data.length}</label>`); };
             this._onClickRemove = () => { return true };
@@ -237,6 +240,7 @@
         </style>
         <div class="ouglist-container_${this.id}">
             ${this.title ? `<h2 class="ouglist-header_${this.id}">${this.title}</h2>` : ''}
+            ${this.enableFilter ? `
             <form class="ouglist-filter_${this.id}">
                 <button class="ouglist-filter-icon_${this.id}"><label>🔍</label></button>
                 <div class="ouglist-input-group_${this.id}">
@@ -245,10 +249,12 @@
                 </div>
                 <div class="ouglist-backdrop_${this.id}" ></div>
             </form>
+
+            `: `` }
             <div class="ouglist-wrapper_${this.id}">
                 <ul class="ouglist-ul_${this.id}"></ul>
             </div>
-            <button class="ouglist-btn-add_${this.id}">+</button>
+            ${this.enableAddButton ? `<button class="ouglist-btn-add_${this.id}">+</button>` : `` } 
         </div>
         `;
             //#endregion 
@@ -260,15 +266,21 @@
             this.container = this.querySelector(`.ouglist-container_${this.id}`);
             this.wrapper = this.querySelector(`.ouglist-wrapper_${this.id}`);
             this.ul = this.querySelector(`.ouglist-ul_${this.id}`);
-            this.addButton = this.querySelector(`.ouglist-btn-add_${this.id}`);
-            this.filterForm = this.querySelector(`.ouglist-filter_${this.id}`);
-            this.filterForm.filterInputGroup = this.filterForm.querySelector(`.ouglist-input-group_${this.id}`);
-            this.filterForm.filterInput = this.filterForm.querySelector(`input`);
-            this.filterForm.backdrop = this.filterForm.querySelector(`.ouglist-backdrop_${this.id}`);
+            this.addButton = this.enableAddButton ? this.querySelector(`.ouglist-btn-add_${this.id}`) : null;
+
+            if (this.enableFilter) {
+                this.filterForm = this.querySelector(`.ouglist-filter_${this.id}`);
+                this.filterForm.filterInputGroup = this.filterForm.querySelector(`.ouglist-input-group_${this.id}`);
+                this.filterForm.filterInput = this.filterForm.querySelector(`input`);
+                this.filterForm.backdrop = this.filterForm.querySelector(`.ouglist-backdrop_${this.id}`);
+            } else {
+                this.filterForm = null;
+            }
+            
             //#endregion
 
             //#region Swiper
-            this._enableSwiper = true;
+            this._enableSwiper = this.attributes.enableswiper?.value ? this.attributes.enableswiper.value !== "false" : true;
             this.swiperActiveItem = null;
             this.startX = 0;
             this.currentX = 0;
@@ -418,24 +430,25 @@
         }
 
         #attachEventHandlers() {
-            this.addButton.addEventListener('click', (e) => {
+
+            this.addButton?.addEventListener('click', (e) => {
                 this._onClickAdd(e);
             });
 
-            this.filterForm.addEventListener('click', () => {
+            this.filterForm?.addEventListener('click', () => {
                 this.filterForm.classList.toggle('expanded');
             });
 
-            this.filterForm.backdrop.addEventListener('click', (e) => {
+            this.filterForm?.backdrop.addEventListener('click', (e) => {
                 e.stopPropagation();
                 this.filterForm.classList.toggle('expanded');
             });
 
-            this.filterForm.filterInputGroup.addEventListener('click', (e) => {
+            this.filterForm?.filterInputGroup.addEventListener('click', (e) => {
                 e.stopPropagation();
             });
 
-            this.filterForm.addEventListener('submit', (e) => {
+            this.filterForm?.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const query = this.filterForm.filterInput.value.toLowerCase();
                 this.filteredData = this.data.filter(item => item.outerHTML.trim().toLowerCase().includes(query));

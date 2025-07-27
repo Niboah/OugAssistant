@@ -145,12 +145,7 @@ namespace OugAssistant_APP.Sevices.Planning
 
         public async Task<bool> Finish(Guid id)
         {
-            OugTask task = await _db.GetOugTaskByIdAsync(id);
-            if (task == null)
-            {
-                return false; // Tarea no encontrada
-            }
-            return task.Finish();
+            return await _db.FinishOugTaskAsync(id);
         }
     }
 }

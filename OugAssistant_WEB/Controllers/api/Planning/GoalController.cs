@@ -46,8 +46,8 @@ public class GoalController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<object>> CreateGoal([FromBody] GoalAPIin goal)
     {
-        await _goalServices.AddOugGoalAsync(goal);
-        return await GetGoal(goal.Id);
+        bool result = await _goalServices.AddOugGoalAsync(goal);
+        return result? Ok() : NoContent();
     }
     
     // POST: api/Goal/Finish/id

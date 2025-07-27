@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using OugAssistant.Features.Planning.Model;
 using OugAssistant_APP.DTO.Planning;
@@ -128,7 +129,9 @@ public class TaskController : ControllerBase
     [HttpDelete]
     public async Task<IActionResult> DeleteTask(Guid id)
     {
-        return BadRequest();
+        var task  = await _taskServices.DeleteOugTaskAsync(id);
+        if (!task) return NotFound("Task not found or already finished.");
+        return Ok();
     }
     #endregion
 }

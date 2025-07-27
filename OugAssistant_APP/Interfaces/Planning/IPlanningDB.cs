@@ -15,6 +15,7 @@ namespace OugAssistant_APP.Interfaces.IPlanningBD
         Task<bool> AddOugTaskAsync(OugTask item);
         Task<bool> UpdateOugTaskAsync(OugTask item);
         Task<bool> DeleteOugTaskAsync(Guid id);
+        Task<bool> FinishOugTaskAsync(Guid id);
         #endregion
 
         #region Goal
