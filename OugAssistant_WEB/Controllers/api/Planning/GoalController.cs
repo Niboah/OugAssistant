@@ -4,8 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OugAssistant.Features.Planning.Model;
 using OugAssistant_APP.DTO.Planning;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-
+using OugAssistant_APP.Interfaces.Planning;
 
 namespace OugAssistant_WEB.Controllers.api.Planning;
 
@@ -13,64 +12,134 @@ namespace OugAssistant_WEB.Controllers.api.Planning;
 [ApiController]
 public class GoalController : ControllerBase
 {
+    private readonly IGoalServices _goalServices;
+    private readonly ILogger<GoalController> _logger;
 
-    private readonly OugAssistant_APP.Interfaces.Planning.IGoalServices _goalServices;
-    public GoalController(OugAssistant_APP.Interfaces.Planning.IGoalServices goalServices)
+    public GoalController(IGoalServices goalServices, ILogger<GoalController> logger)
     {
         _goalServices = goalServices;
+        _logger = logger;
     }
 
-    // GET: api/Goal
     [HttpGet]
     public async Task<ActionResult<IEnumerable<GoalAPIout>>> GetGoals()
     {
-        var result = await _goalServices.GetAllOugGoalAsync();
-        return Ok(result);
+        try
+        {
+            _logger.LogDebug("GetGoals...");
+            var result = await _goalServices.GetAllOugGoalAsync();
+            _logger.LogDebug($"GetGoals completado. Total: {result?.Count() ?? 0}");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            string message = $"Error en GetGoals: {ex.Message}";
+            _logger.LogError(ex, message);
+            return StatusCode(StatusCodes.Status500InternalServerError, message);
+        }
     }
 
-    // GET: api/Goal/id
     [HttpGet("{id}")]
     public async Task<ActionResult<object>> GetGoal(Guid id)
     {
-        var goal = await _goalServices.GetOugGoalByIdAsync(id);
-
-        if (goal == null)
+        try
         {
-            return NotFound();
-        }
+            _logger.LogDebug($"GetGoal con id: {id} ...");
+            var goal = await _goalServices.GetOugGoalByIdAsync(id);
 
-        return Ok(goal);
+            if (goal == null)
+            {
+                _logger.LogWarning($"GetGoal {id} no encontrada.");
+                return NotFound();
+            }
+
+            _logger.LogDebug($"GetGoal exitoso para id: {id}");
+            return Ok(goal);
+        }
+        catch (Exception ex)
+        {
+            string message = $"Error en GetGoal({id}): {ex.Message}";
+            _logger.LogError(ex, message);
+            return StatusCode(StatusCodes.Status500InternalServerError, message);
+        }
     }
 
-    // POST: api/Goal
     [HttpPost]
     public async Task<ActionResult<object>> CreateGoal([FromBody] GoalAPIin goal)
     {
-        bool result = await _goalServices.AddOugGoalAsync(goal);
-        return result? Ok() : NoContent();
+        try
+        {
+            _logger.LogDebug("CreateGoal...");
+            bool result = await _goalServices.AddOugGoalAsync(goal);
+            _logger.LogDebug($"CreateGoal completado. Resultado: {result}");
+            return result ? Ok(result) : Conflict(result);
+        }
+        catch (Exception ex)
+        {
+            string message = $"Error en CreateGoal: {ex.Message}";
+            _logger.LogError(ex, message);
+            return StatusCode(StatusCodes.Status500InternalServerError, message);
+        }
     }
-    
-    // POST: api/Goal/Finish/id
+
     [HttpPost("Finish/{id}")]
     public async Task<ActionResult<bool>> FinishGoal(Guid id)
     {
-       return await _goalServices.FinishGoal(id);
+        try
+        {
+            _logger.LogDebug($"FinishGoal con id: {id}");
+            bool result = await _goalServices.FinishGoal(id);
+            _logger.LogDebug($"FinishGoal completado para id: {id}. Resultado: {result}");
+            return result ? Ok(result) : Conflict(result);
+        }
+        catch (Exception ex)
+        {
+            string message = $"Error en FinishGoal({id}): {ex.Message}";
+            _logger.LogError(ex, message);
+            return StatusCode(StatusCodes.Status500InternalServerError, message);
+        }
     }
 
-    // PATCH: api/Goal/id
     [HttpPatch("{id}")]
     public async Task<ActionResult<GoalAPIout>> UpdateGoal(Guid id, [FromBody] GoalAPIin goal)
     {
-        if (id != goal.Id) return BadRequest();
-        await _goalServices.UpdateOugGoalAsync(goal);
-        return Ok(goal);
+        if (id != goal.Id)
+        {
+            string warning = $"UpdateGoal: ID de la URL ({id}) no coincide con el cuerpo ({goal.Id})";
+            _logger.LogWarning(warning);
+            return BadRequest(warning);
+        }
+
+        try
+        {
+            _logger.LogDebug($"UpdateGoal para id: {id}");
+            await _goalServices.UpdateOugGoalAsync(goal);
+            _logger.LogDebug($"UpdateGoal completado para id: {id}");
+            return Ok(goal);
+        }
+        catch (Exception ex)
+        {
+            string message = $"Error en UpdateGoal({id}): {ex.Message}";
+            _logger.LogError(ex, message);
+            return StatusCode(StatusCodes.Status500InternalServerError, message);
+        }
     }
 
-    // DELETE: api/Goal/id
     [HttpDelete("{id}")]
     public async Task<ActionResult<bool>> DeleteGoal(Guid id)
     {
-        return BadRequest();
-        return Ok(await _goalServices.DeleteOugGoalAsync(id));
+        try
+        {
+            _logger.LogDebug($"DeleteGoal con id: {id}");
+            bool result = await _goalServices.DeleteOugGoalAsync(id);
+            _logger.LogDebug($"DeleteGoal completado para id: {id}. Resultado: {result}");
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            string message = $"Error en DeleteGoal({id}): {ex.Message}";
+            _logger.LogError(ex, message);
+            return StatusCode(StatusCodes.Status500InternalServerError, message);
+        }
     }
 }

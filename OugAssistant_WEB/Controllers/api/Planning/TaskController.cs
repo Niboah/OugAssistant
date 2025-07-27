@@ -12,11 +12,13 @@ public class TaskController : ControllerBase
 {
     private readonly ITaskServices _taskServices;
     private readonly IGoalServices _goalServices;
+    private readonly ILogger<TaskController> _logger;
 
-    public TaskController(ITaskServices taskServices, IGoalServices goalServices)
+    public TaskController(ITaskServices taskServices, IGoalServices goalServices, ILogger<TaskController> logger)
     {
         _taskServices = taskServices;
         _goalServices = goalServices;
+        _logger = logger;
     }
 
     #region GET
@@ -24,114 +26,222 @@ public class TaskController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TaskAPIout>>> GetTasks()
     {
-        var tasks = await _taskServices.GetAllOugTaskAsync();
-        return Ok(tasks);
+        try
+        {
+            _logger.LogDebug($"GetTasks...");
+            var tasks = await _taskServices.GetAllOugTaskAsync();
+            _logger.LogDebug($"Total de tareas: {tasks.Count()}");
+            return Ok(tasks);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en GetTasks");
+            return StatusCode(500, "Error interno al obtener las tareas.");
+        }
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<TaskAPIout>> GetTask(Guid id)
     {
-        var task = await _taskServices.GetOugTaskByIdAsync(id);
-        if (task == null) return NotFound();
-        return Ok(task);
+        try
+        {
+            _logger.LogDebug($"GetTasks con id: {id} ...");
+            var task = await _taskServices.GetOugTaskByIdAsync(id);
+            if (task == null)
+            {
+                _logger.LogWarning($"Tarea con ID {id} no encontrada.");
+                return NotFound();
+            }
+            return Ok(task);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error en GetTask({id})");
+            return StatusCode(500, "Error interno al obtener la tarea.");
+        }
     }
 
     #endregion
 
     #region POST
 
-    [Route("Event")]
-    [HttpPost]
+    [HttpPost("Event")]
     public async Task<ActionResult<TaskAPIout>> CreateEvent([FromBody] EventAPIin task)
     {
-        if (task.Name == null || task.GoalId == null || task.EventDateTime == null)
-            return BadRequest("Missing required fields for Event");
+        try
+        {
+            if (task.Name == null || task.GoalId == null || task.EventDateTime == null)
+                return BadRequest("Faltan campos obligatorios para el evento.");
 
-        var goal = await _goalServices.GetOugGoalByIdAsync(task.GoalId.Value);
-        if (goal == null) return NotFound("Goal not found.");
-        await _taskServices.AddOugTaskAsync(task);
-        return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
+            var goal = await _goalServices.GetOugGoalByIdAsync(task.GoalId.Value);
+            if (goal == null)
+                return NotFound("Goal no encontrado.");
+
+            await _taskServices.AddOugTaskAsync(task);
+            _logger.LogInformation($"Evento creado: {task.Id}");
+            return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en CreateEvent");
+            return StatusCode(500, "Error al crear el evento.");
+        }
     }
 
-    [Route("Mission")]
-    [HttpPost]
+    [HttpPost("Mission")]
     public async Task<ActionResult<TaskAPIout>> CreateMission([FromBody] MissionAPIin task)
     {
-        if (task.Name == null || task.GoalId == null || task.DeadLine == null)
-            return BadRequest("Missing required fields for Mission");
+        try
+        {
+            if (task.Name == null || task.GoalId == null || task.DeadLine == null)
+                return BadRequest("Faltan campos obligatorios para la misión.");
 
-        var goal = await _goalServices.GetOugGoalByIdAsync(task.GoalId.Value);
-        if (goal == null) return NotFound("Goal not found.");
+            var goal = await _goalServices.GetOugGoalByIdAsync(task.GoalId.Value);
+            if (goal == null)
+                return NotFound("Goal no encontrado.");
 
-        await _taskServices.AddOugTaskAsync(task);
-        return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
+            await _taskServices.AddOugTaskAsync(task);
+            _logger.LogInformation($"Misión creada: {task.Id}");
+            return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en CreateMission");
+            return StatusCode(500, "Error al crear la misión.");
+        }
     }
 
-    [Route("Routine")]
-    [HttpPost]
+    [HttpPost("Routine")]
     public async Task<ActionResult<TaskAPIout>> CreateRoutine([FromBody] RoutineAPIin task)
     {
-        if (task.Name == null || task.GoalId == null || task.WeekTimes == null)
-            return BadRequest("Missing required fields for Routine");
+        try
+        {
+            if (task.Name == null || task.GoalId == null || task.WeekTimes == null)
+                return BadRequest("Faltan campos obligatorios para la rutina.");
 
-        var goal = await _goalServices.GetOugGoalByIdAsync(task.GoalId.Value);
-        if (goal == null) return NotFound("Goal not found.");
+            var goal = await _goalServices.GetOugGoalByIdAsync(task.GoalId.Value);
+            if (goal == null)
+                return NotFound("Goal no encontrado.");
 
-        await _taskServices.AddOugTaskAsync(task);
-
-        return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
+            await _taskServices.AddOugTaskAsync(task);
+            _logger.LogInformation($"Rutina creada: {task.Id}");
+            return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error en CreateRoutine");
+            return StatusCode(500, "Error al crear la rutina.");
+        }
     }
 
     #endregion
 
     #region PATCH
 
-    [Route("Event/{id}")]
-    [HttpPatch]
+    [HttpPatch("Event/{id}")]
     public async Task<IActionResult> PatchEvent(Guid id, [FromBody] EventAPIin task)
     {
-        if (id != task.Id) return new BadRequestResult();
-        await _taskServices.UpdateOugTaskAsync(task);
-        return Ok();
+        if (id != task.Id)
+            return BadRequest("El ID no coincide.");
+
+        try
+        {
+            await _taskServices.UpdateOugTaskAsync(task);
+            _logger.LogInformation($"Evento actualizado: {id}");
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error actualizando evento {id}");
+            return StatusCode(500, "Error al actualizar el evento.");
+        }
     }
 
-    [Route("Mission/{id}")]
-    [HttpPatch]
+    [HttpPatch("Mission/{id}")]
     public async Task<IActionResult> PatchMission(Guid id, [FromBody] MissionAPIin task)
     {
-        if (id != task.Id) return new BadRequestResult();
-        await _taskServices.UpdateOugTaskAsync(task);
-        return Ok();
+        if (id != task.Id)
+            return BadRequest("El ID no coincide.");
+
+        try
+        {
+            await _taskServices.UpdateOugTaskAsync(task);
+            _logger.LogInformation($"Misión actualizada: {id}");
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error actualizando misión {id}");
+            return StatusCode(500, "Error al actualizar la misión.");
+        }
     }
 
-    [Route("Routine/{id}")]
-    [HttpPatch]
+    [HttpPatch("Routine/{id}")]
     public async Task<IActionResult> PatchRoutine(Guid id, [FromBody] RoutineAPIin task)
     {
-        if (id != task.Id) return new BadRequestResult();
-        await _taskServices.UpdateOugTaskAsync(task);
-        return Ok();
+        if (id != task.Id)
+            return BadRequest("El ID no coincide.");
+
+        try
+        {
+            await _taskServices.UpdateOugTaskAsync(task);
+            _logger.LogInformation($"Rutina actualizada: {id}");
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error actualizando rutina {id}");
+            return StatusCode(500, "Error al actualizar la rutina.");
+        }
     }
 
-    [Route("Finish/{id}")]
-    [HttpPatch]
+    [HttpPatch("Finish/{id}")]
     public async Task<IActionResult> FinishTask(Guid id)
     {
-        var task = await _taskServices.Finish(id);
-        if (!task) return NotFound("Task not found or already finished.");
-        return Ok();
+        try
+        {
+            bool success = await _taskServices.Finish(id);
+            if (!success)
+            {
+                _logger.LogWarning($"Tarea no encontrada o ya finalizada: {id}");
+                return NotFound("Tarea no encontrada o ya finalizada.");
+            }
+
+            _logger.LogInformation($"Tarea finalizada: {id}");
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error al finalizar tarea {id}");
+            return StatusCode(500, "Error al finalizar la tarea.");
+        }
     }
 
     #endregion
 
     #region DELETE
-    [Route("{id}")]
-    [HttpDelete]
+
+    [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTask(Guid id)
     {
-        var task  = await _taskServices.DeleteOugTaskAsync(id);
-        if (!task) return NotFound("Task not found or already finished.");
-        return Ok();
+        try
+        {
+            bool success = await _taskServices.DeleteOugTaskAsync(id);
+            if (!success)
+            {
+                _logger.LogWarning($"Tarea no encontrada o ya eliminada: {id}");
+                return NotFound("Tarea no encontrada o ya eliminada.");
+            }
+
+            _logger.LogInformation($"Tarea eliminada: {id}");
+            return Ok();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error eliminando tarea {id}");
+            return StatusCode(500, "Error al eliminar la tarea.");
+        }
     }
+
     #endregion
 }

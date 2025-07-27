@@ -13,11 +13,11 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        var logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+        Logger logger = NLog.LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
         logger.Debug("init main");
 
         try{
-            var builder = WebApplication.CreateBuilder(args);
+            WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers() // Add API controllers
                         .AddJsonOptions(options =>
@@ -25,7 +25,7 @@ public class Program
                             options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
                         });
 
-            builder.Services.AddEndpointsApiExplorer();  // API documentation (Swagger)
+            builder.Services.AddEndpointsApiExplorer();  // API documentation (Swagger). Explore endpoints and generate documentation automatically
             builder.Services.AddSwaggerGen(); // Enable Swagger UI for API documentation
 
             builder.Services.AddMvc();           // Add MVC services (MVC controllers, views, etc.)
@@ -47,7 +47,6 @@ public class Program
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();  // Show detailed exception page in development
-                
                 app.UseSwaggerUI();               // Display Swagger UI
             }
             else
@@ -76,7 +75,7 @@ public class Program
         catch (Exception exception)
         {
             // NLog: catch setup errors
-            logger.Error(exception, "Stopped program because of exception");
+            logger.Error("Stopped program because of exception", exception);
             throw;
         }
         finally
