@@ -12,7 +12,7 @@ namespace OugAssistant_APP.DTO.Planning
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public TaskPriority Priority { get; set; }
         public GoalAPIout? Goal { get; set; }
         public string Type { get; set; }
@@ -55,23 +55,9 @@ namespace OugAssistant_APP.DTO.Planning
         public string Description { get; set; }
         public TaskPriority Priority { get; set; }
         public Guid? GoalId { get; set; }
-
-    }
-
-    public class EventAPIin : TaskAPIin
-    {
         public DateTime? EventDateTime { get; set; }
         public string? Place { get; set; }
-    }
-
-    public class MissionAPIin : TaskAPIin
-    {
         public DateTime? DeadLine { get; set; }
-    }
-
-    public class RoutineAPIin : TaskAPIin
-    {
         public HashSet<TimeOnly>[]? WeekTimes { get; set; }
     }
-
 }

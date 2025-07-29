@@ -3,7 +3,7 @@
 
 // Write your JavaScript code.
 
-function ajaxCall(url, method = 'GET', body = null) {
+function ougFetch(url, method = 'GET', body = null) {
     return fetch('OugAssistant'+url,
         {
             method: method,

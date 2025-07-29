@@ -15,8 +15,8 @@ namespace OugAssistant_APP.DTO.Planning
         public bool Archived { get; set; }
         public int Level { get; set; }
         public GoalAPIout? ParentGoal { get; set; }
-        public ICollection<GoalAPIout> ChildGoals { get; set; } = new List<GoalAPIout>();
-        public ICollection<TaskAPIout> Tasks { get; set; } = new List<TaskAPIout>();
+        public ICollection<GoalAPIout> ChildGoals { get; set; } 
+        public ICollection<TaskAPIout> Tasks { get; set; } 
 
         public GoalAPIout(OugGoal goal, HashSet<Guid>? visited = null)
         {
@@ -33,11 +33,13 @@ namespace OugAssistant_APP.DTO.Planning
                 visited.Add(goal.Id);
                 ParentGoal = goal.ParentGoal != null ? new GoalAPIout(goal.ParentGoal, visited) : null;
                 ChildGoals = goal.ChildGoals?.Select(g => new GoalAPIout(g, visited)).ToList() ?? new List<GoalAPIout>();
-                Tasks = goal.Tasks?.Select(t => new TaskAPIout(t, true, visited)).ToList();
+                Tasks = goal.Tasks?.Select(t => new TaskAPIout(t, true, visited)).ToList() ?? new List<TaskAPIout>();
             }
             else
             {
                 ParentGoal = null;
+                ChildGoals = new List<GoalAPIout>();
+                Tasks = new List<TaskAPIout>();
             }
 
         }

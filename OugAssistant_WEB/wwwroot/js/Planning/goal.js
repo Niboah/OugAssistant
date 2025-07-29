@@ -140,7 +140,7 @@ class GoalList {
             "Description": description,
             "ParentGoalId": parentGoalId
         }
-        return ajaxCall('/api/Goal', 'POST', body)
+        return ougFetch('/api/Goal', 'POST', body)
             .then(result => {
                 alert(JSON.stringify(result));
                 return result;
@@ -148,7 +148,7 @@ class GoalList {
     }
 
     readGoal(id) {
-        if (id) return ajaxCall('/api/Goal/' + id, 'GET');
+        if (id) return ougFetch('/api/Goal/' + id, 'GET');
         return this.getGoals();
     }
 
@@ -159,7 +159,7 @@ class GoalList {
             "Description": description,
             "ParentGoalId": parentGoalId
         }
-        return ajaxCall('/api/Goal/'+id, 'PATCH', body)
+        return ougFetch('/api/Goal/'+id, 'PATCH', body)
             .then(result => {
                 alert(JSON.stringify(result));
                 return result;
@@ -168,11 +168,11 @@ class GoalList {
     
 
     getGoals() {
-        return ajaxCall('/api/Goal', 'GET');
+        return ougFetch('/api/Goal', 'GET');
     }
 
     refresh() {
-        ajaxCall('/Planning/GoalList', 'GET')
+        ougFetch('/Planning/GoalList', 'GET')
             .then(html => {
                 document.getElementById('goal_container').innerHTML = html;
                 this.init();

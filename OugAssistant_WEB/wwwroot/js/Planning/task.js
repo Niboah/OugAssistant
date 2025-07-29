@@ -342,12 +342,12 @@ class TasksList {
     //#region Task
 
     readTask(id) {
-        if (id) return ajaxCall('/api/Task/' + id, 'GET');
-        return ajaxCall('/api/Task', 'GET');
+        if (id) return ougFetch('/api/Task/' + id, 'GET');
+        return ougFetch('/api/Task', 'GET');
     }
 
     deleteTask(id) {
-        if (id) return ajaxCall('/api/Task/' + id, 'DELETE');
+        if (id) return ougFetch('/api/Task/' + id, 'DELETE');
     }
 
     createMission(name, description, priority, goalId, deadtime) {
@@ -358,7 +358,7 @@ class TasksList {
             "goalId": goalId,
             "deadLine": deadtime
         }
-        return ajaxCall('/api/Task/Mission', 'POST', body)
+        return ougFetch('/api/Task/Mission', 'POST', body)
             .then(result => {
                 alert(JSON.stringify(result));
                 return result.id;
@@ -374,7 +374,7 @@ class TasksList {
             "goalId": goalId,
             "deadLine": deadtime
         }
-        return ajaxCall('/api/Task/Mission/' + id, 'PATCH', body)
+        return ougFetch('/api/Task/Mission/' + id, 'PATCH', body)
             .then(result => {
                 alert(JSON.stringify(result));
                 return result.id;
@@ -390,7 +390,7 @@ class TasksList {
             "eventDateTime": eventDateTime,
             "place": place
         }
-        return ajaxCall('/api/Task/Event', 'POST', body)
+        return ougFetch('/api/Task/Event', 'POST', body)
             .then(result => {
                 alert(JSON.stringify(result));
                 return result.id;
@@ -407,7 +407,7 @@ class TasksList {
             "eventDateTime": eventDateTime,
             "place": place
         }
-        return ajaxCall('/api/Task/Event/' + id, 'PATCH', body)
+        return ougFetch('/api/Task/Event/' + id, 'PATCH', body)
             .then(result => {
                 alert(JSON.stringify(result));
                 return result.id;
@@ -422,7 +422,7 @@ class TasksList {
             "goalId": goalId,
             "weekTimes": weekTimes
         }
-        return ajaxCall('/api/Task/Routine', 'POST', body)
+        return ougFetch('/api/Task/Routine', 'POST', body)
             .then(result => {
                 alert(JSON.stringify(result));
                 return result.id;
@@ -438,7 +438,7 @@ class TasksList {
             "goalId": goalId,
             "weekTimes": weekTimes
         }
-        return ajaxCall('/api/Task/Routine/' + id, 'PATCH', body)
+        return ougFetch('/api/Task/Routine/' + id, 'PATCH', body)
             .then(result => {
                 alert(JSON.stringify(result));
                 return result.id;
@@ -446,11 +446,11 @@ class TasksList {
     }
 
     finishTask(id) {
-        if (id) return ajaxCall('/api/Task/Finish/' + id, 'PATCH');
+        if (id) return ougFetch('/api/Task/Finish/' + id, 'PATCH');
     }
 
     refresh() {
-        ajaxCall('/Planning/TaskList', 'GET')
+        ougFetch('/Planning/TaskList', 'GET')
             .then(html => {
                 document.getElementById('task_container').innerHTML = html;
 
@@ -467,7 +467,7 @@ class TasksList {
             "name": name,
             "description": description
         }
-        return ajaxCall('/api/Goal', 'POST', body)
+        return ougFetch('/api/Goal', 'POST', body)
             .then(result => {
                 alert(JSON.stringify(result));
                 return result;
@@ -475,12 +475,12 @@ class TasksList {
     }
 
     readGoal(id) {
-        if (id) return ajaxCall('/api/Goal/' + id, 'GET');
-        return ajaxCall('/api/Goal', 'GET');
+        if (id) return ougFetch('/api/Goal/' + id, 'GET');
+        return ougFetch('/api/Goal', 'GET');
     }
 
     updateGoal(id) {
-        if (id) return ajaxCall('/api/Goal/' + id, 'PATCH');
+        if (id) return ougFetch('/api/Goal/' + id, 'PATCH');
     }
 
     //#endregion
