@@ -30,9 +30,7 @@ public class PlanningController : Controller
         PlanningViewModel taskViewModel = new PlanningViewModel();
         
         taskViewModel.TaskList = await _taskServices.GetAllOugTaskAsync();
-        _logger.LogInformation("TaskList " + JsonSerializer.Serialize(taskViewModel.TaskList) );
         taskViewModel.GoalList = await _goalServices.GetAllOugGoalAsync();
-        _logger.LogInformation("GoalList " + JsonSerializer.Serialize(taskViewModel.GoalList));
         return View(taskViewModel);
     }
 
@@ -40,9 +38,7 @@ public class PlanningController : Controller
         _logger.LogInformation("PlanningController TaskList");
         PlanningViewModel taskViewModel = new PlanningViewModel();
         taskViewModel.TaskList = await _taskServices.GetAllOugTaskAsync();
-        _logger.LogInformation("TaskList " + JsonSerializer.Serialize(taskViewModel.TaskList));
         taskViewModel.GoalList = await _goalServices.GetAllOugGoalAsync();
-        _logger.LogInformation("GoalList " + JsonSerializer.Serialize(taskViewModel.GoalList));
         return PartialView("Task/Task", taskViewModel);
     }
 
@@ -51,9 +47,7 @@ public class PlanningController : Controller
         _logger.LogInformation("PlanningController GoalList");
         PlanningViewModel goalViewModel = new PlanningViewModel();
         goalViewModel.TaskList = await _taskServices.GetAllOugTaskAsync();
-        _logger.LogInformation("TaskList " + JsonSerializer.Serialize(goalViewModel.TaskList));
         goalViewModel.GoalList = await _goalServices.GetAllOugGoalAsync();
-        _logger.LogInformation("GoalList " + JsonSerializer.Serialize(goalViewModel.GoalList));
         return PartialView("Goal/Goal", goalViewModel);
     }
 }

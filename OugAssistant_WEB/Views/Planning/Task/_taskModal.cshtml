@@ -21,10 +21,21 @@
 							<label for="inputTaskName">Task Name</label>
 						</div>
 					</div>
-
+					<!--ParentTask-->
+					<div class="col-4">
+						<div class="form-floating">
+							<select class="form-select form-select-lg" id="selectParentTask" aria-label="ParentTask" placeholder="Choose">
+								<option selected value=""></option>
+								@foreach (var task in Model.TaskList)
+								{
+									<option value="@(task.Id)">@(task.Name)</option>
+								}
+							</select>
+							<label for="selectParentTask">ParentTask</label>
+						</div>
+					</div>
 					<!--Goal-->
 					<div class="col-4">
-
 						<div class="form-floating">
 							<select class="form-select form-select-lg" id="selectTaskGoal" aria-label="Goal" placeholder="Choose">
 								<option selected value=""></option>
@@ -33,7 +44,7 @@
 									<option value="@(goal.Id)">@(goal.Name)</option>
 								}
 							</select>
-							<label for="floatingSelectGoal">Goal</label>
+							<label for="selectTaskGoal">Goal</label>
 						</div>
 					</div>
 				</div>
@@ -42,9 +53,9 @@
 				<div class="mb-3">
 					<nav>
 						<div class="nav nav-tabs" id="nav-tab" role="tablist">
-							<button class="taskType nav-link active" id="nav-mission-tab" data-tasktype="mission" data-bs-toggle="tab" data-bs-target="#nav-mission" type="button" role="tab" aria-controls="nav-mission" aria-selected="true">Mission</button>
-							<button class="taskType nav-link" id="nav-event-tab" data-tasktype="event" data-bs-toggle="tab" data-bs-target="#nav-event" type="button" role="tab" aria-controls="nav-event" aria-selected="false">Event</button>
-							<button class="taskType nav-link" id="nav-routine-tab" data-tasktype="routine" data-bs-toggle="tab" data-bs-target="#nav-routine" type="button" role="tab" aria-controls="nav-routine" aria-selected="false">Routine</button>
+							<button class="taskType nav-link active" id="nav-mission-tab" data-tasktype="OugMission" data-bs-toggle="tab" data-bs-target="#nav-mission" type="button" role="tab" aria-controls="nav-mission" aria-selected="true">Mission</button>
+							<button class="taskType nav-link" id="nav-event-tab" data-tasktype="OugEvent" data-bs-toggle="tab" data-bs-target="#nav-event" type="button" role="tab" aria-controls="nav-event" aria-selected="false">Event</button>
+							<button class="taskType nav-link" id="nav-routine-tab" data-tasktype="OugRoutine" data-bs-toggle="tab" data-bs-target="#nav-routine" type="button" role="tab" aria-controls="nav-routine" aria-selected="false">Routine</button>
 						</div>
 					</nav>
 					<div class="tab-content" id="nav-tabContent">
@@ -75,7 +86,6 @@
 										<label for="floatingInputEventDatetime">EventDatetime</label>
 									</div>
 								</div>
-
 
 							</div>
 

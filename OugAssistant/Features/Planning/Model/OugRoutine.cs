@@ -1,21 +1,22 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using OugAssistant.Objects;
-
+﻿
 namespace OugAssistant.Features.Planning.Model;
-
 
 public class OugRoutine : OugTask
 {
-    public HashSet<TimeOnly>[] WeekTimes { get; set; } = new HashSet<TimeOnly>[7];
+    public int RoutineDays { get; set; }
+    public HashSet<TimeOnly>[] Routines { get; set; }
+    public DateTime? LastFinished { get; set; }
     public OugRoutine() { }
-    public OugRoutine(string name, string? description, TaskPriority priority, Guid goalId, OugGoal goal, HashSet<TimeOnly>[] weekTimes) : base(name, description, priority, goalId, goal){
-        WeekTimes = weekTimes;
+    public OugRoutine(string name, string? description, TaskPriority priority, OugTask? parentTask, ICollection<OugGoal> goalList, HashSet<TimeOnly>[] routines): base(name, description, priority, parentTask, goalList)
+    {
+        Routines = routines;
+        RoutineDays = routines.Length;
     }
 
     public void Add(int weekDay, List<TimeOnly> timeDay)
     {
-        WeekTimes[weekDay] = timeDay.ToHashSet(); ;
+        if (weekDay >= 0 && weekDay < RoutineDays)
+            Routines[weekDay] = timeDay.ToHashSet(); ;
     }
 
     public DateTime RoutineDateTime()
@@ -23,10 +24,16 @@ public class OugRoutine : OugTask
         return CalcNextsRoutinesDateTime(1).FirstOrDefault();
     }
 
+    public override bool Finish()
+    {
+        LastFinished = DateTime.Now;
+        return true;
+    }
+
     private List<DateTime> CalcNextsRoutinesDateTime(int numList = 10)
     {
         List<DateTime> dateTimes = new List<DateTime>();
-        DateTime last = DateTime.Now;
+        DateTime last = (DateTime)(LastFinished != default ? LastFinished : DateTime.Now);
         for (int i = 0; i < numList; i++)
         {
             last = CalcNextRoutineDateTime(last);
@@ -41,7 +48,7 @@ public class OugRoutine : OugTask
         DateTime nextDateTime = now;
         int nowDayOfWeek = now.DayOfWeek == 0 ? 7 : (int)now.DayOfWeek; //Change Sunday to 7
 
-        var weekTimesOrdered = WeekTimes.Select((set, index) => new { Index = index, Set = set })
+        var weekTimesOrdered = Routines.Select((set, index) => new { Index = index+1, Set = set })
                  .Where(x => x.Set != null && x.Set.Count > 0)
                  .OrderBy(x => (x.Index - nowDayOfWeek + 7) % 7)
                  .FirstOrDefault();

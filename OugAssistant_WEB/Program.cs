@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using NLog;
 using NLog.Web;
@@ -23,6 +24,7 @@ public class Program
                         .AddJsonOptions(options =>
                         {
                             options.JsonSerializerOptions.Converters.Add(new TimeOnlyJsonConverter());
+                            //options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; Evitar ciclos infinitos en la serialización de objetos
                         });
 
             builder.Services.AddEndpointsApiExplorer();  // API documentation (Swagger). Explore endpoints and generate documentation automatically
@@ -75,7 +77,7 @@ public class Program
         catch (Exception exception)
         {
             // NLog: catch setup errors
-            logger.Error("Stopped program because of exception", exception);
+            logger.Error(exception,"Stopped program because of exception");
             throw;
         }
         finally

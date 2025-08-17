@@ -9,34 +9,49 @@ public enum TaskPriority
 
 public abstract class OugTask
 {
-    [Key]
     public Guid Id { get; private set; }
     public string Name { get; set; }
     public string? Description { get; set; }
     public TaskPriority Priority { get; set; }
-    public DateTime? FinishDateTime { get; private set; }
-
-    // FK - Goal
-    public Guid GoalId { get; set; }
-    public OugGoal Goal { get; set; }
+    public DateTime CreatedDateTime { get; private set; } = DateTime.Now;
+    public DateTime? FinishedDateTime { get; private set; }
+    public ICollection<OugGoal> Goals { get; set; } = new List<OugGoal>();
+    public OugTask? Parent { get; set; }
+    public ICollection<OugTask> Childs { get; set; } = new List<OugTask>();
 
     public OugTask() { }
-    public OugTask(string name, string? description, TaskPriority priority, Guid goalId, OugGoal goal)
+    public OugTask(string name, string? description, TaskPriority priority, OugTask? parentTask, ICollection<OugGoal> goalList)
     {
         Id = new Guid();
         Name = name;
         Description = description;
         Priority = priority;
-        GoalId = goalId;
-        Goal = goal;
-        Goal.AddTask(this);
 
+        if (parentTask != null)
+        {
+            Parent = parentTask;
+        }
+
+        Goals = goalList;
+
+        foreach (var item in Goals)
+        {
+            item.AddTask(this);
+        }
     }
 
-    public bool Finish()
+    public virtual bool Finish()
     {
-        FinishDateTime = DateTime.Now;
-        return Goal.ArchiveGoal();
+        FinishedDateTime = DateTime.Now;
+
+        bool result = false;
+
+        foreach (var goal in Goals)
+        {
+            result = goal.ArchiveGoal() || result;
+        }
+
+        return result;
     }
 }
 

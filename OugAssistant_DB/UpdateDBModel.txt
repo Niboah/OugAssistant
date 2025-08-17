@@ -1,0 +1,7 @@
+﻿$Env:ASPNETCORE_ENVIRONMENT = "Production"
+$Env:ASPNETCORE_ENVIRONMENT = "Development"
+
+dotnet ef migrations Add ReworkModel --project OugAssistant_DB  --startup-project OugAssistant_WEB
+dotnet ef migrations update ReworkModel --project OugAssistant_DB  --startup-project OugAssistant_WEB
+
+dotnet ef database update ReworkModel --project OugAssistant_DB  --startup-project OugAssistant_WEB

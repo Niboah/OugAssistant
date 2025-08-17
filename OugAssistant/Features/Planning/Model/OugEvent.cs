@@ -7,7 +7,7 @@ public class OugEvent : OugTask
     public string Place { get; set; }
 
     public OugEvent() { }
-    public OugEvent(string name, string? description, TaskPriority priority, Guid goalId, OugGoal goal, DateTime eventDateTime, string place) : base(name, description, priority, goalId, goal)
+    public OugEvent(string name, string? description, TaskPriority priority, OugTask? parentTask, ICollection<OugGoal> goalList, DateTime eventDateTime, string place) : base(name, description, priority, parentTask, goalList)
     {
         EventDateTime = eventDateTime;
         Place = place;

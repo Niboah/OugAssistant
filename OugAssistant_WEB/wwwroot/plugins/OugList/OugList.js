@@ -1,11 +1,12 @@
 ﻿if (!document.OugList) {
     class OugList extends HTMLElement {
-        constructor(id = null, enableAddButton = true, enableFilter =true) {
+        constructor(id = null, title = null, enableAddButton = true, enableFilter =true) {
             super();
             this.id = id ? id: this.id;
             this.itemid = 0;
             this.data = [];
             this.filteredData = [];
+            this.title = title ? title : this.title;
 
             this.enableAddButton = enableAddButton;
             this.enableFilter = enableFilter;
@@ -370,7 +371,10 @@
                 this._onClickRemove = async (...args) => {
                     try {
                         const result = await fn(...args);
-                        return typeof result === 'boolean' ? result : false;
+                        if (typeof result === 'boolean') return result;
+                        else {
+                            throw new SyntaxError("The function must be return a boolean.");
+                        }
                     } catch (e) {
                         console.warn(e);
                         return false;
@@ -388,7 +392,10 @@
                 this._onClickConfirm = async (...args) => {
                     try {
                         const result = await fn(...args);
-                        return typeof result === 'boolean' ? result : false;
+                        if (typeof result === 'boolean') return result;
+                        else {
+                            throw new SyntaxError("The function must be return a boolean.");
+                        }
                     } catch (e) {
                         console.warn(e);
                         return false;
@@ -455,13 +462,13 @@
                 this.#render();
             });
 
-            this.ul.addEventListener('click', (e) => {
+            this.ul.addEventListener('click',async (e) => {
                 const item = e.target.closest('li');
                 if (item && e.target.classList.contains(`ouglist-btn-remove_${this.id}`)) {
-                    if (this._onClickRemove(e, item))
+                    if (await this._onClickRemove(e, item))
                         this.#removeItem(item);
                 } else if (item && e.target.classList.contains(`ouglist-btn-confirm_${this.id}`)) {
-                    if (this._onClickConfirm(e, item))
+                    if (await this._onClickConfirm(e, item))
                         this.#removeItem(item);
                 }
                 else if (item) {

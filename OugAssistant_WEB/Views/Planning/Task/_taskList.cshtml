@@ -1,17 +1,20 @@
 ﻿@model OugAssistant_WEB.Models.Planning.PlanningViewModel
 @using OugAssistant_APP.DTO.Planning
 
-<oug-list id="ouglist-tasklist" >
+<oug-list id="ouglist-tasklist">
 	@foreach (var item in Model.TaskList)
 	{
 		<li class="list-group-item" data-taskid="@(item.Id)">
 			<div class="m-2">
 				<div class="row align-items-center">
-					<div class="col-8 d-flex align-items-center">
+					<div class="col-4 d-flex align-items-center">
 						<h4 class="mb-0"><strong>@item.Name</strong></h4>
 					</div>
+					<div class="col-4">
+						@item.ParentTask?.Name
+					</div>
 					<div class="col-4 text-end">
-						🎯 @item.Goal.Name
+						🎯 @string.Join(", ", item.GoalList.Select(g => g.Name)) 
 					</div>
 				</div>
 
@@ -20,19 +23,19 @@
 						@switch (item.Type)
 						{
 							case "OugMission":
-								<div>
-									📅 @item.DeadLine
+								<div style="@(item.DeadLine < DateTime.Now ? "color:red" : "")">
+									📅 @item.DeadLine?.ToString("dd/MM/yyyy")
 								</div>
 								break;
 							case "OugEvent":
 								<div class="d-flex flex-column justify-content-between">
 									<span>📍 @item.Place</span>
-									<span>⏰ @item.EventDateTime</span>
+									<span style="@(item.EventDateTime < DateTime.Now ? "color:red" : "")">⏰ @item.EventDateTime?.ToString("dd/MM/yyyy HH:mm")</span>
 								</div>
 								break;
 							case "OugRoutine":
-								<div>
-									<i class="bi bi-repeat me-1"></i> Veces por semana: @item.WeekTimes?.Length ?? 0
+								<div style="@(item.RoutineDatetime < DateTime.Now ? "color:red" : "")">
+									📅 @item.RoutineDatetime
 								</div>
 								break;
 						}
@@ -74,7 +77,7 @@
 							<span>⏰ <span class="task-datetime"></span></span>
 						</div>
 					</div>
-					
+
 
 					<!-- Routine -->
 					<div class="task-type routine-type" hidden>

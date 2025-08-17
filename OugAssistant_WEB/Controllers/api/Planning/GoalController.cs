@@ -64,7 +64,7 @@ public class GoalController : ControllerBase
         }
     }
 
-    [HttpPost]
+    [HttpPost("")]
     public async Task<ActionResult<object>> CreateGoal([FromBody] GoalAPIin goal)
     {
         try

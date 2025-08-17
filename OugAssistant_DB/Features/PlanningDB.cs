@@ -18,23 +18,58 @@ public class PlanningDBContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Herencia TPH (Table Per Hierarchy)
-        modelBuilder.Entity<OugTask>()
-            .HasDiscriminator<string>("TaskType")
-            .HasValue<OugEvent>("Event")
-            .HasValue<OugMission>("Mission")
-            .HasValue<OugRoutine>("Routine");
+        base.OnModelCreating(modelBuilder);
 
-        // Relación Goal - Tasks
-        modelBuilder.Entity<OugGoal>()
-            .HasMany(g => g.Tasks)
-            .WithOne(t => t.Goal)
-            .HasForeignKey(t => t.GoalId)
-            .OnDelete(DeleteBehavior.Cascade);
+        #region OugGoal
+        modelBuilder.Entity<OugGoal>(entity =>
+        {
+            entity.HasKey(g => g.Id);
 
-        // Relacion Routine - Lista de WeekTimes
+            // Auto-relación (Parent - Childs)
+            entity.HasOne(g => g.Parent)
+                  .WithMany(g => g.Childs)
+                  .HasForeignKey("ParentId")
+                  .OnDelete(DeleteBehavior.Restrict);
+
+            // Many-to-Many con OugTask (sin tabla explícita)
+            entity.HasMany(g => g.Tasks)
+                  .WithMany(t => t.Goals)
+                  .UsingEntity<Dictionary<string, object>>(
+                      "OugTaskGoal", // nombre de la tabla intermedia
+                      j => j.HasOne<OugTask>()
+                            .WithMany()
+                            .HasForeignKey("TaskId")
+                            .OnDelete(DeleteBehavior.Cascade),
+                      j => j.HasOne<OugGoal>()
+                            .WithMany()
+                            .HasForeignKey("GoalId")
+                            .OnDelete(DeleteBehavior.Cascade),
+                      j =>
+                      {
+                          j.HasKey("TaskId", "GoalId");
+                      });
+        });
+        #endregion
+
+        #region OugTask
+        modelBuilder.Entity<OugTask>(entity =>
+        {
+            entity.HasKey(t => t.Id);
+
+            entity.HasOne(t => t.Parent)
+                  .WithMany(t => t.Childs)
+                  .HasForeignKey("ParentId")
+                  .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Table-per-hierarchy (TPH) para OugTask
+        modelBuilder.Entity<OugEvent>().HasBaseType<OugTask>();
+        modelBuilder.Entity<OugMission>().HasBaseType<OugTask>();
+        modelBuilder.Entity<OugRoutine>().HasBaseType<OugTask>();
+
+        // Relacion Routine - Lista de Routines
         modelBuilder.Entity<OugRoutine>()
-            .Property(r => r.WeekTimes)
+            .Property(r => r.Routines)
             .HasConversion(
                 v => JsonSerializer.Serialize(v, new JsonSerializerOptions
                 {
@@ -45,6 +80,8 @@ public class PlanningDBContext : DbContext
                     Converters = { new TimeOnlyJsonConverter() }
                 })
             );
+
+        #endregion
     }
 
     public class TimeOnlyJsonConverter : JsonConverter<TimeOnly>
@@ -65,125 +102,137 @@ public class PlanningDBContext : DbContext
 
 public class PlanningDB : IPlanningDB
 {
-    private readonly PlanningDBContext _db;
+    private readonly PlanningDBContext _context;
 
-    public PlanningDB(PlanningDBContext db)
+    public PlanningDB(PlanningDBContext context)
     {
-        _db = db;
+        _context = context;
     }
 
-    public async Task<IEnumerable<OugTask>> GetAllOugTaskAsync(Type? type = null)
-    {
-        if (type == null)
-            return await _db.OugTasks.Include(t=>t.Goal).ToListAsync();
-        else
-            return await _db.OugTasks.Include(t => t.Goal).Where(t => t.GetType() == type).ToListAsync();
-    }
+    #region OugTask
 
-    public async Task<OugTask?> GetOugTaskByIdAsync(Guid id, Type? type = null)
-    {
-        var task = await _db.OugTasks.Include(t=>t.Goal).FirstOrDefaultAsync(t=>t.Id==id);
-        if (task == null)
-            return null;
-        if (type == null || task.GetType() == type)
-            return task;
-        return null;
-    }
+    public async Task<ICollection<OugTask>> GetOugTaskAsync()
+        => await _context.OugTasks.ToListAsync();
+
+    public async Task<ICollection<OugTask>> GetOugTaskAsync(ICollection<Guid> idList)
+        => await _context.OugTasks.Where(t => idList.Contains(t.Id)).ToListAsync();
+
+    public async Task<OugTask?> GetOugTaskByIdAsync(Guid id)
+        => await _context.OugTasks.FindAsync(id);
 
     public async Task<bool> AddOugTaskAsync(OugTask item)
     {
-        await _db.OugTasks.AddAsync(item);
-        var result = await _db.SaveChangesAsync();
-        return result > 0;
+        await _context.OugTasks.AddAsync(item);
+        return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> AddOugTaskAsync(ICollection<OugTask> itemList)
+    {
+        await _context.OugTasks.AddRangeAsync(itemList);
+        return await _context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> UpdateOugTaskAsync(OugTask item)
     {
-        var existing = await _db.OugTasks.Include(t => t.Goal).FirstOrDefaultAsync(t => t.Id == item.Id);
-        if (existing == null)
-            return false;
+        _context.OugTasks.Update(item);
+        return await _context.SaveChangesAsync() > 0;
+    }
 
-        existing.Name = item.Name;
-        existing.Description = item.Description;
-        existing.Priority = item.Priority;
-        existing.GoalId = item.GoalId;
-        existing.Goal = item.Goal;
-        // Si necesitas actualizar propiedades específicas de subclases, hazlo aquí
-
-        await _db.SaveChangesAsync();
-        return true;
+    public async Task<bool> UpdateOugTaskAsync(ICollection<OugTask> itemList)
+    {
+        _context.OugTasks.UpdateRange(itemList);
+        return await _context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> DeleteOugTaskAsync(Guid id)
     {
-        var entity = await _db.OugTasks.FindAsync(id);
-        if (entity != null)
-        {
-            _db.OugTasks.Remove(entity);
-            await _db.SaveChangesAsync();
-            return true;
-        }
-        return false;
+        var entity = await _context.OugTasks.FindAsync(id);
+        if (entity == null) return false;
+
+        _context.OugTasks.Remove(entity);
+        return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> DeleteOugTaskAsync(ICollection<Guid> idList)
+    {
+        var entities = await _context.OugTasks.Where(t => idList.Contains(t.Id)).ToListAsync();
+        if (!entities.Any()) return false;
+
+        _context.OugTasks.RemoveRange(entities);
+        return await _context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> FinishOugTaskAsync(Guid id)
     {
-        var task = await _db.OugTasks.Include(t => t.Goal).FirstOrDefaultAsync(t=>t.Id==id);
-        if (task == null)
-            return false;
-        task.Finish();
-        await _db.SaveChangesAsync();
-        return true;
+        var entity = await _context.OugTasks.FindAsync(id);
+        if (entity == null) return false;
+        var result = entity.Finish();
+        return await _context.SaveChangesAsync() > 0;
+    }
+    public async Task<bool> FinishOugTaskAsync(ICollection<Guid> idList)
+    {
+        var entities = await _context.OugTasks.Where(t => idList.Contains(t.Id)).ToListAsync();
+        if (!entities.Any()) return false;
+        var result = false;
+        foreach (var e in entities)
+            result = e.Finish() || result;
+
+        return await _context.SaveChangesAsync() > 0;
     }
 
-    public async Task<IEnumerable<OugGoal>> GetAllOugGoalAsync()
-    {
-        return await _db.OugGoal
-            .Include(g => g.Tasks)
-            .ToListAsync();
-    }
+    #endregion
+
+    #region OugGoal
+
+    public async Task<ICollection<OugGoal>> GetOugGoalAsync()
+        => await _context.OugGoal.ToListAsync();
+
+    public async Task<ICollection<OugGoal>> GetOugGoalAsync(ICollection<Guid> idList)
+        => await _context.OugGoal.Where(g => idList.Contains(g.Id)).ToListAsync();
 
     public async Task<OugGoal?> GetOugGoalByIdAsync(Guid id)
-    {
-        return await _db.OugGoal
-            .Include(g => g.Tasks)
-            .Include(g => g.ParentGoal)
-            .Include(g => g.ChildGoals)
-            .FirstOrDefaultAsync(g => g.Id == id);
-    }
+        => await _context.OugGoal.FindAsync(id);
 
     public async Task<bool> AddOugGoalAsync(OugGoal item)
     {
-        await _db.OugGoal.AddAsync(item);
-        var result = await _db.SaveChangesAsync();
-        return result > 0;
+        await _context.OugGoal.AddAsync(item);
+        return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<bool> AddOugGoalAsync(ICollection<OugGoal> itemList)
+    {
+        await _context.OugGoal.AddRangeAsync(itemList);
+        return await _context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> UpdateOugGoalAsync(OugGoal item)
     {
-        var existing = await GetOugGoalByIdAsync(item.Id);
-        if (existing == null)
-            return false;
+        _context.OugGoal.Update(item);
+        return await _context.SaveChangesAsync() > 0;
+    }
 
-        existing.Name = item.Name;
-        existing.Description = item.Description;
-        existing.ParentGoal = item.ParentGoal;
-        existing.Archived = item.Archived;
-        // Si necesitas actualizar la colección Tasks, hazlo aquí
-
-        await _db.SaveChangesAsync();
-        return true;
+    public async Task<bool> UpdateOugGoalAsync(ICollection<OugGoal> itemList)
+    {
+        _context.OugGoal.UpdateRange(itemList);
+        return await _context.SaveChangesAsync() > 0;
     }
 
     public async Task<bool> DeleteOugGoalAsync(Guid id)
     {
-        var entity = await GetOugGoalByIdAsync(id);
-        if (entity != null)
-        {
-            _db.OugGoal.Remove(entity);
-            await _db.SaveChangesAsync();
-            return true;
-        }
-        return false;
+        var entity = await _context.OugGoal.FindAsync(id);
+        if (entity == null) return false;
+
+        _context.OugGoal.Remove(entity);
+        return await _context.SaveChangesAsync() > 0;
     }
+
+    public async Task<bool> DeleteOugGoalAsync(ICollection<Guid> idList)
+    {
+        var entities = await _context.OugGoal.Where(g => idList.Contains(g.Id)).ToListAsync();
+        if (!entities.Any()) return false;
+
+        _context.OugGoal.RemoveRange(entities);
+        return await _context.SaveChangesAsync() > 0;
+    }
+    #endregion
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OugAssistant.Features.Planning.Model;
+﻿using OugAssistant.Features.Planning.Model;
 using OugAssistant_APP.DTO.Planning;
 using OugAssistant_APP.Interfaces.IPlanningBD;
 using OugAssistant_APP.Interfaces.Planning;
@@ -20,47 +15,90 @@ namespace OugAssistant_APP.Sevices.Planning
         }
         public async Task<IEnumerable<GoalAPIout>> GetAllOugGoalAsync()
         {
-            var goals = await this._db.GetAllOugGoalAsync();
-            return goals.OrderByDescending(g => g.Level).Select(g=> new GoalAPIout(g));
+            try
+            {
+                var goals = await this._db.GetOugGoalAsync();
+                return goals.OrderBy(g => g.Tasks.Count()).ThenBy(g=>g.Childs.Count()).ThenByDescending(g=>g.Level).Select(g => new GoalAPIout(g));
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("GetAllOugGoalAsync", ex);
+            }
         }
 
         public async Task<GoalAPIout?> GetOugGoalByIdAsync(Guid id)
         {
-            var goal = await this._db.GetOugGoalByIdAsync(id);
-            return new GoalAPIout(goal);
+            try
+            {
+                var goal = await this._db.GetOugGoalByIdAsync(id);
+                return new GoalAPIout(goal);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("GetOugGoalByIdAsync", ex);
+            }
         }
 
         public async Task<bool> AddOugGoalAsync(GoalAPIin goalIn)
         {
-            
-            OugGoal? parentGoal = null;
-            if (goalIn.ParentGoalId != null) {
-                parentGoal = await this._db.GetOugGoalByIdAsync((Guid)goalIn.ParentGoalId);
+            try
+            {
+                OugGoal? parentGoal = null;
+                if (goalIn.ParentGoalId != null)
+                {
+                    parentGoal = await this._db.GetOugGoalByIdAsync((Guid)goalIn.ParentGoalId);
+                }
+                OugGoal goal = new OugGoal(goalIn.Name, goalIn.Description, parentGoal);
+                return await this._db.AddOugGoalAsync(goal);
             }
-            OugGoal goal = new OugGoal(goalIn.Name, goalIn.Description, parentGoal);
-            return await this._db.AddOugGoalAsync(goal);
+            catch (Exception ex)
+            {
+                throw new Exception("AddOugGoalAsync", ex);
+            }
         }
 
         public async Task<bool> UpdateOugGoalAsync(GoalAPIin goalIn)
         {
-            var item = await this._db.GetOugGoalByIdAsync(goalIn.Id);
-            if(item == null)
+            try
             {
-                return false;
+                var item = await this._db.GetOugGoalByIdAsync((Guid)goalIn.Id);
+                if (item == null)
+                {
+                    return false;
+                }
+                item.Name = goalIn.Name;
+                item.Description = goalIn.Description;
+                return await this._db.UpdateOugGoalAsync(item);
             }
-            item.Name = goalIn.Name;
-            item.Description = goalIn.Description;
-            return await this._db.UpdateOugGoalAsync(item);
+            catch (Exception ex)
+            {
+                throw new Exception("UpdateOugGoalAsync", ex);
+            }
         }
 
         public async Task<bool> DeleteOugGoalAsync(Guid id)
         {
-            return await this._db.DeleteOugGoalAsync(id);
+            try
+            {
+                return await this._db.DeleteOugGoalAsync(id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("DeleteOugGoalAsync", ex);
+            }
         }
 
-        public async Task<bool> FinishGoal(Guid id) {
-            OugGoal goal = await _db.GetOugGoalByIdAsync(id);
-            return goal.ArchiveGoal();
+        public async Task<bool> FinishGoal(Guid id)
+        {
+            try
+            {
+                OugGoal goal = await _db.GetOugGoalByIdAsync(id);
+                return goal.ArchiveGoal();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("FinishGoal", ex);
+            }
         }
     }
 }

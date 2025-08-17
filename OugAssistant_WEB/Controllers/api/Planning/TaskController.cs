@@ -65,18 +65,11 @@ public class TaskController : ControllerBase
 
     #region POST
 
-    [HttpPost("Event")]
-    public async Task<ActionResult<TaskAPIout>> CreateEvent([FromBody] EventAPIin task)
+    [HttpPost("")]
+    public async Task<ActionResult<TaskAPIout>> CreateTask([FromBody] TaskAPIin task)
     {
         try
         {
-            if (task.Name == null || task.GoalId == null || task.EventDateTime == null)
-                return BadRequest("Faltan campos obligatorios para el evento.");
-
-            var goal = await _goalServices.GetOugGoalByIdAsync(task.GoalId.Value);
-            if (goal == null)
-                return NotFound("Goal no encontrado.");
-
             await _taskServices.AddOugTaskAsync(task);
             _logger.LogInformation($"Evento creado: {task.Id}");
             return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
@@ -84,53 +77,7 @@ public class TaskController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error en CreateEvent");
-            return StatusCode(500, "Error al crear el evento.");
-        }
-    }
-
-    [HttpPost("Mission")]
-    public async Task<ActionResult<TaskAPIout>> CreateMission([FromBody] MissionAPIin task)
-    {
-        try
-        {
-            if (task.Name == null || task.GoalId == null || task.DeadLine == null)
-                return BadRequest("Faltan campos obligatorios para la misión.");
-
-            var goal = await _goalServices.GetOugGoalByIdAsync(task.GoalId.Value);
-            if (goal == null)
-                return NotFound("Goal no encontrado.");
-
-            await _taskServices.AddOugTaskAsync(task);
-            _logger.LogInformation($"Misión creada: {task.Id}");
-            return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error en CreateMission");
-            return StatusCode(500, "Error al crear la misión.");
-        }
-    }
-
-    [HttpPost("Routine")]
-    public async Task<ActionResult<TaskAPIout>> CreateRoutine([FromBody] RoutineAPIin task)
-    {
-        try
-        {
-            if (task.Name == null || task.GoalId == null || task.WeekTimes == null)
-                return BadRequest("Faltan campos obligatorios para la rutina.");
-
-            var goal = await _goalServices.GetOugGoalByIdAsync(task.GoalId.Value);
-            if (goal == null)
-                return NotFound("Goal no encontrado.");
-
-            await _taskServices.AddOugTaskAsync(task);
-            _logger.LogInformation($"Rutina creada: {task.Id}");
-            return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error en CreateRoutine");
-            return StatusCode(500, "Error al crear la rutina.");
+            return StatusCode(500, "Error al crear el tarea.");
         }
     }
 
@@ -138,8 +85,8 @@ public class TaskController : ControllerBase
 
     #region PATCH
 
-    [HttpPatch("Event/{id}")]
-    public async Task<IActionResult> PatchEvent(Guid id, [FromBody] EventAPIin task)
+    [HttpPatch("{id}")]
+    public async Task<IActionResult> PatchEvent(Guid id, [FromBody] TaskAPIin task)
     {
         if (id != task.Id)
             return BadRequest("El ID no coincide.");
@@ -147,51 +94,13 @@ public class TaskController : ControllerBase
         try
         {
             await _taskServices.UpdateOugTaskAsync(task);
-            _logger.LogInformation($"Evento actualizado: {id}");
-            return Ok();
+            _logger.LogInformation($"Tarea actualizado: {id}");
+            return CreatedAtAction(nameof(GetTask), new { id = task.Id }, task);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"Error actualizando evento {id}");
-            return StatusCode(500, "Error al actualizar el evento.");
-        }
-    }
-
-    [HttpPatch("Mission/{id}")]
-    public async Task<IActionResult> PatchMission(Guid id, [FromBody] MissionAPIin task)
-    {
-        if (id != task.Id)
-            return BadRequest("El ID no coincide.");
-
-        try
-        {
-            await _taskServices.UpdateOugTaskAsync(task);
-            _logger.LogInformation($"Misión actualizada: {id}");
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error actualizando misión {id}");
-            return StatusCode(500, "Error al actualizar la misión.");
-        }
-    }
-
-    [HttpPatch("Routine/{id}")]
-    public async Task<IActionResult> PatchRoutine(Guid id, [FromBody] RoutineAPIin task)
-    {
-        if (id != task.Id)
-            return BadRequest("El ID no coincide.");
-
-        try
-        {
-            await _taskServices.UpdateOugTaskAsync(task);
-            _logger.LogInformation($"Rutina actualizada: {id}");
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, $"Error actualizando rutina {id}");
-            return StatusCode(500, "Error al actualizar la rutina.");
+            _logger.LogError(ex, $"Error actualizando Tarea {id}");
+            return StatusCode(500, "Error al actualizar el evTareaento.");
         }
     }
 

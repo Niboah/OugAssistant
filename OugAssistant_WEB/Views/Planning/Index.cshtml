@@ -6,11 +6,11 @@
 <script type="module" src="~/plugins/OugList/OugList.js"></script>
 
 <div id="main_container" class="h-100 w-100 row mx-0">
-	<div id="task_container" class="h-100 col">
-		@await Html.PartialAsync("Task/Task", Model)
-	</div>
-	<div id="goal_container" class="h-100 col">
-		@await Html.PartialAsync("Goal/Goal", Model)
-	</div>
+    <div id="task_container" class="col-12 col-lg-6 h-100">
+        @await Html.PartialAsync("Task/Task", Model)
+    </div>
+    <div id="goal_container" class="d-none d-lg-block col-lg-6 h-100">
+        @await Html.PartialAsync("Goal/Goal", Model)
+    </div>
 </div>
 

@@ -6,14 +6,17 @@
 		<li class="list-group-item" data-goalid="@(item.Id)">
 			<div class="m-2">
 				<div class="row align-items-center">
-					<div class="col-8 d-flex align-items-center">
+					<div class="col-6 d-flex align-items-center">
 						<h4 class="mb-0"><strong>@item.Name</strong></h4>
 					</div>
+					<div class="col-2">
+						@item.ParentGoal?.Name
+					</div>
 					<div class="col-4 text-end">
-						@item.Tasks.Count()
+						Taks: @item.Tasks.Count()
 					</div>
 				</div>
-
+				
 				<div class="row mt-2">
 					<div class="col-4">
 						@item.Level

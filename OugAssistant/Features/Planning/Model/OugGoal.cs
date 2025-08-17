@@ -5,15 +5,14 @@ namespace OugAssistant.Features.Planning.Model;
 
 public class OugGoal
 {
-    [Key]
     public Guid Id { get; private set; }
     public string Name { get; set; }
     public string Description { get; set; }
-    public bool Archived = false;
-    public ICollection<OugTask> Tasks;
-    public OugGoal? ParentGoal { get; set; }
+    public bool Archived { get; set; } = false;
     public int Level { get; protected set; }
-    public ICollection<OugGoal> ChildGoals { get; protected set; }  = new List<OugGoal>();
+    public ICollection<OugTask> Tasks { get; set; } = new List<OugTask>();
+    public OugGoal? Parent { get; set; }
+    public ICollection<OugGoal> Childs { get; protected set; } = new List<OugGoal>();
 
     public OugGoal() { }
     public OugGoal(string name, string description, OugGoal? parentGoal = null)
@@ -21,31 +20,26 @@ public class OugGoal
         Id = Guid.NewGuid();
         Name = name;
         Description = description;
-        Tasks = new List<OugTask>();
-        ChildGoals = new List<OugGoal>();
 
         if (parentGoal == null)
         {
-            Level = 0;
-            ParentGoal = null;
+            Level = 1;
+            Parent = null;
         }
         else
         {
-            ParentGoal = parentGoal;
-            ParentGoal.ChildGoals.Add(this);
+            Parent = parentGoal;
+            Parent.Childs.Add(this);
             Level = parentGoal.Level + 1;
         }
     }
 
     public void AddTask(OugTask task)
     {
-        Tasks.Add(task);
-        if (Archived) Archived = false;
-    }
-
-    public ICollection<OugTask> getTasks()
-    {
-        return Tasks;
+        if (!Tasks.Any(t => t.Id == task.Id)) {
+            Tasks.Add(task);
+            if (Archived) Archived = false;
+        }
     }
 
     public bool ArchiveGoal()
@@ -64,9 +58,9 @@ public class OugGoal
         foreach (var task in Tasks)
         {
             total += 1;
-            if (task.FinishDateTime != null) completed += 1;
+            if (task.FinishedDateTime != null) completed += 1;
         }
-        foreach (var childGoal in ChildGoals)
+        foreach (var childGoal in Childs)
         {
             total += 1;
             if (childGoal.Archived || childGoal.getCompletion() == 1.0m) completed += 1;

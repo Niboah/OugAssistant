@@ -22,130 +22,175 @@ namespace OugAssistant_APP.Sevices.Planning
 
         public async Task<IEnumerable<TaskAPIout>> GetAllOugTaskAsync(bool orderByPriorityFirst, Type? type = null)
         {
-            var tasks = await this._db.GetAllOugTaskAsync(type);
-
-            var withDate = tasks.Where(task=>task.FinishDateTime==null).Select(task => new
+            try
             {
-                Task = task,
-                Date = task switch
+                IEnumerable<OugTask> tasks = await this._db.GetOugTaskAsync();
+
+                var withDate = tasks.Where(task => task.FinishedDateTime == null).Select(task => new
                 {
-                    OugEvent e => e.EventDateTime,
-                    OugMission m => m.DeadLine,
-                    OugRoutine r => r.RoutineDateTime(),
-                    _ => DateTime.MaxValue // Por si hay un tipo no reconocido
-                }
-            });
+                    Task = new TaskAPIout(task, true),
+                    Date = task switch
+                    {
+                        OugEvent e => e.EventDateTime,
+                        OugMission m => m.DeadLine,
+                        OugRoutine r => r.RoutineDateTime(),
+                        _ => DateTime.MaxValue // Por si hay un tipo no reconocido
+                    }
+                });
 
-            var ordered = orderByPriorityFirst
-                ? withDate.OrderBy(t => t.Task.Priority).ThenBy(t => t.Date).Select(t => new TaskAPIout(t.Task))
-                : withDate.OrderBy(t => t.Date).ThenBy(t => t.Task.Priority).Select(t => new TaskAPIout(t.Task));
+                var ordered = orderByPriorityFirst
+                    ? withDate.OrderBy(t => t.Task.Priority).ThenBy(t => t.Date).Select(t => t.Task)
+                    : withDate.OrderBy(t => t.Date).ThenBy(t => t.Task.Priority).Select(t => t.Task);
 
-            return ordered.ToList();
+                return ordered.ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("GetAllOugTaskAsync", ex);
+            }
         }
 
         public async Task<TaskAPIout?> GetOugTaskByIdAsync(Guid id, Type? type = null)
         {
-            var task = await this._db.GetOugTaskByIdAsync(id, type);
+            try
+            {
+                var task = await this._db.GetOugTaskByIdAsync(id);
 
-            return new TaskAPIout(task);
+                return new TaskAPIout(task);
+            }
+            catch (Exception ex) {
+                throw new Exception("GetOugTaskByIdAsync", ex);
+            }
         }
 
         public async Task<bool> AddOugTaskAsync(TaskAPIin item)
         {
-            if (item.GoalId == null)
-                throw new ArgumentException("GoalId no puede ser null");
-
-            OugGoal goal = await _db.GetOugGoalByIdAsync(item.GoalId.Value);
-
-            OugTask task = item switch
+            try
             {
-                EventAPIin e when e.EventDateTime != null => new OugEvent(
-                    name: e.Name,
-                    description: e.Description,
-                    priority: e.Priority,
-                    goalId: e.GoalId.Value,
-                    goal: goal,
-                    eventDateTime: e.EventDateTime.Value,
-                    place: e.Place
-                ),
-                MissionAPIin m when m.DeadLine != null => new OugMission(
-                    name: m.Name,
-                    description: m.Description,
-                    priority: m.Priority,
-                    goalId: m.GoalId.Value,
-                    goal: goal,
-                    deadLine: m.DeadLine.Value
-                ),
-                RoutineAPIin r when r.WeekTimes != null => new OugRoutine(
-                    name: r.Name,
-                    description: r.Description,
-                    priority: r.Priority,
-                    goalId: r.GoalId.Value,
-                    goal: goal,
-                    weekTimes: r.WeekTimes
-                ),
-                _ => throw new InvalidOperationException("Tipo de tarea no soportado o datos incompletos.")
-            };
+                if (item.GoalIdList.Count() == 0)
+                    throw new ArgumentException("GoalId no puede ser null");
 
-            return await _db.AddOugTaskAsync(task);
+
+
+                ICollection<OugGoal> goalList = await _db.GetOugGoalAsync(item.GoalIdList);
+                OugTask? parentTask = item.ParentTaskId!=null ? await _db.GetOugTaskByIdAsync((Guid)item.ParentTaskId) : null;
+
+                OugTask task = item.Type switch
+                {
+                    "OugEvent" => new OugEvent(
+                        name: item.Name,
+                        description: item.Description,
+                        priority: item.Priority,
+                        parentTask: parentTask,
+                        goalList: goalList,
+                        eventDateTime: (DateTime)item.EventDateTime,
+                        place: item.Place
+                    ),
+                    "OugMission" => new OugMission(
+                        name: item.Name,
+                        description: item.Description,
+                        priority: item.Priority,
+                        parentTask: parentTask,
+                        goalList: goalList,
+                        deadLine: item.DeadLine.Value
+                    ),
+                    "OugRoutine" => new OugRoutine(
+                        name: item.Name,
+                        description: item.Description,
+                        priority: item.Priority,
+                        parentTask: parentTask,
+                        goalList: goalList,
+                        routines: item.Routines
+                    ),
+                    _ => throw new InvalidOperationException("Tipo de tarea no soportado o datos incompletos.")
+                };
+
+                return await _db.AddOugTaskAsync(task);
+            }
+            catch (Exception ex) {
+                throw new Exception("AddOugTaskAsync", ex);
+            }
         }
 
         public async Task<bool> UpdateOugTaskAsync(TaskAPIin item)
         {
-            OugTask task = await this._db.GetOugTaskByIdAsync(item.Id);
-            if (task == null)
+            try
             {
-                return false; // Tarea no encontrada
-            }
-            task.Name = item.Name;
-            task.Description = item.Description;
-            task.Priority = item.Priority;
-            
-            if (task.GoalId != item.GoalId) {
-                OugGoal goal = await _db.GetOugGoalByIdAsync((Guid)item.GoalId);
-                task.GoalId = (Guid)item.GoalId;
-                task.Goal = goal;
-            }
+                OugTask task = await this._db.GetOugTaskByIdAsync((Guid)item.Id);
+                if (task == null)
+                {
+                    return false; // Tarea no encontrada
+                }
+                task.Name = item.Name;
+                task.Description = item.Description;
+                task.Priority = item.Priority;
 
-            if (item is EventAPIin e)
-            {
-                if (e.EventDateTime == null)
-                    throw new ArgumentException("EventDateTime no puede ser null para OugEvent");
-                if (task is OugEvent ev)
-                {
-                    ev.EventDateTime = e.EventDateTime.Value;
-                    ev.Place = e.Place;
+
+                foreach (var newGoalId in item.GoalIdList) { 
+                    var existingGoal = task.Goals.FirstOrDefault(g => g.Id == newGoalId);
+                    if (existingGoal == null)
+                    {
+                        OugGoal goal = await _db.GetOugGoalByIdAsync(newGoalId);
+                        task.Goals.Add(goal);
+                    }
                 }
-            }
-            else if (item is MissionAPIin m)
-            {
-                if (m.DeadLine == null)
-                    throw new ArgumentException("DeadLine no puede ser null para OugMission");
-                if (task is OugMission mission)
+
+                if (item.Type == "OugEvent")
                 {
-                    mission.DeadLine = m.DeadLine.Value;
+                    if (item.EventDateTime == null)
+                        throw new ArgumentException("EventDateTime no puede ser null para OugEvent");
+                    if (task is OugEvent ev)
+                    {
+                        ev.EventDateTime = item.EventDateTime.Value;
+                        ev.Place = item.Place;
+                    }
                 }
-            }
-            else if (item is RoutineAPIin r)
-            {
-                if (r.WeekTimes == null)
-                    throw new ArgumentException("WeekTimes no puede ser null para OugRoutine");
-                if (task is OugRoutine routine)
+                else if (item.Type == "OugMission")
                 {
-                    routine.WeekTimes = r.WeekTimes;
+                    if (item.DeadLine == null)
+                        throw new ArgumentException("DeadLine no puede ser null para OugMission");
+                    if (task is OugMission mission)
+                    {
+                        mission.DeadLine = (DateTime)item.DeadLine;
+                    }
                 }
+                else if (item.Type == "OugRoutine")
+                {
+                    if (item.Routines == null)
+                        throw new ArgumentException("WeekTimes no puede ser null para OugRoutine");
+                    if (task is OugRoutine routine)
+                    {
+                        routine.Routines = item.Routines;
+                    }
+                }
+                return await this._db.UpdateOugTaskAsync(task);
             }
-            return await this._db.UpdateOugTaskAsync(task);
+            catch (Exception ex) {
+                throw new Exception("UpdateOugTaskAsync", ex);
+            }
         }
 
         public async Task<bool> DeleteOugTaskAsync(Guid id)
         {
-            return await this._db.DeleteOugTaskAsync(id);
+            try
+            {
+                return await this._db.DeleteOugTaskAsync(id);
+            }
+            catch (Exception ex) {
+                throw new Exception("DeleteOugTaskAsync", ex);
+            }
         }
 
         public async Task<bool> Finish(Guid id)
         {
-            return await _db.FinishOugTaskAsync(id);
+            try
+            {
+                return await _db.FinishOugTaskAsync(id);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Finish", ex);
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OugAssistant_DB.Features;
 
@@ -11,9 +12,11 @@ using OugAssistant_DB.Features;
 namespace OugAssistant_DB.Migrations
 {
     [DbContext(typeof(PlanningDBContext))]
-    partial class PlanningModelSnapshot : ModelSnapshot
+    [Migration("20250811220905_ReworkModel3")]
+    partial class ReworkModel3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,12 +45,12 @@ namespace OugAssistant_DB.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ParentId")
+                    b.Property<Guid?>("ParentGoalId")
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ParentId");
+                    b.HasIndex("ParentGoalId");
 
                     b.ToTable("OugGoal");
                 });
@@ -64,48 +67,38 @@ namespace OugAssistant_DB.Migrations
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
-
                     b.Property<DateTime?>("FinishedDateTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<Guid>("GoalId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<Guid?>("ParentId")
+                    b.Property<Guid?>("ParentTaskId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Priority")
                         .HasColumnType("int");
 
+                    b.Property<string>("TaskType")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
                     b.HasKey("Id");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("OugTasks");
-
-                    b.HasDiscriminator().HasValue("OugTask");
-
-                    b.UseTphMappingStrategy();
-                });
-
-            modelBuilder.Entity("OugTaskGoal", b =>
-                {
-                    b.Property<Guid>("TaskId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("GoalId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("TaskId", "GoalId");
 
                     b.HasIndex("GoalId");
 
-                    b.ToTable("OugTaskGoal");
+                    b.HasIndex("ParentTaskId");
+
+                    b.ToTable("OugTasks");
+
+                    b.HasDiscriminator<string>("TaskType").HasValue("OugTask");
+
+                    b.UseTphMappingStrategy();
                 });
 
             modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugEvent", b =>
@@ -119,7 +112,7 @@ namespace OugAssistant_DB.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasDiscriminator().HasValue("OugEvent");
+                    b.HasDiscriminator().HasValue("Event");
                 });
 
             modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugMission", b =>
@@ -129,15 +122,12 @@ namespace OugAssistant_DB.Migrations
                     b.Property<DateTime>("DeadLine")
                         .HasColumnType("datetime2");
 
-                    b.HasDiscriminator().HasValue("OugMission");
+                    b.HasDiscriminator().HasValue("Mission");
                 });
 
             modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugRoutine", b =>
                 {
                     b.HasBaseType("OugAssistant.Features.Planning.Model.OugTask");
-
-                    b.Property<DateTime?>("LastFinished")
-                        .HasColumnType("datetime2");
 
                     b.Property<int>("RoutineDays")
                         .HasColumnType("int");
@@ -146,52 +136,43 @@ namespace OugAssistant_DB.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasDiscriminator().HasValue("OugRoutine");
+                    b.Property<DateTime>("lastFinished")
+                        .HasColumnType("datetime2");
+
+                    b.HasDiscriminator().HasValue("Routine");
                 });
 
             modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugGoal", b =>
                 {
-                    b.HasOne("OugAssistant.Features.Planning.Model.OugGoal", "Parent")
-                        .WithMany("Childs")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                    b.HasOne("OugAssistant.Features.Planning.Model.OugGoal", "ParentGoal")
+                        .WithMany("ChildGoals")
+                        .HasForeignKey("ParentGoalId");
 
-                    b.Navigation("Parent");
+                    b.Navigation("ParentGoal");
                 });
 
             modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugTask", b =>
                 {
-                    b.HasOne("OugAssistant.Features.Planning.Model.OugTask", "Parent")
-                        .WithMany("Childs")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Parent");
-                });
-
-            modelBuilder.Entity("OugTaskGoal", b =>
-                {
-                    b.HasOne("OugAssistant.Features.Planning.Model.OugGoal", null)
-                        .WithMany()
+                    b.HasOne("OugAssistant.Features.Planning.Model.OugGoal", "Goal")
+                        .WithMany("Tasks")
                         .HasForeignKey("GoalId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("OugAssistant.Features.Planning.Model.OugTask", null)
+                    b.HasOne("OugAssistant.Features.Planning.Model.OugTask", "ParentTask")
                         .WithMany()
-                        .HasForeignKey("TaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ParentTaskId");
+
+                    b.Navigation("Goal");
+
+                    b.Navigation("ParentTask");
                 });
 
             modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugGoal", b =>
                 {
-                    b.Navigation("Childs");
-                });
+                    b.Navigation("ChildGoals");
 
-            modelBuilder.Entity("OugAssistant.Features.Planning.Model.OugTask", b =>
-                {
-                    b.Navigation("Childs");
+                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }

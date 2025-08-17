@@ -23,9 +23,9 @@ class GoalList {
 
         this.childGoalListwrapper = document.getElementById('ChildGoalListWrapper');
         this.goalTaskListwrapper = document.getElementById('GoalTasksListWrapper');
-        this.childGoalList = new OugList('ChildGoalList', false, false);
+        this.childGoalList = new OugList('ChildGoalList','ChildGoalList', false, false);
         this.childGoalList.enableSwiper = false;
-        this.goalTaskList = new OugList('GoalTasksList', false, false);
+        this.goalTaskList = new OugList('GoalTasksList', 'GoalTasksList', false, false);
         this.goalTaskList.enableSwiper = false;
         this.childGoalListwrapper.appendChild(this.childGoalList);
         this.goalTaskListwrapper.appendChild(this.goalTaskList);
@@ -49,12 +49,11 @@ class GoalList {
         const that = this;
         return async (e, item) => {
             try {
+                that.inputGoalName.value = "";
+                that.inputGoalDescription.value = "";
+                that.inputParentGoal.value = "";
                 let id;
                 if (e.target.classList.contains('ouglist-btn-add_ouglist-goallist')) {
-
-                    that.inputGoalName.value = "";
-                    that.inputGoalDescription.value = "";
-                    that.inputParentGoal.value = "";
 
                     const goals = await this.getGoals();
                     that.inputParentGoal.disabled = false;
@@ -88,7 +87,7 @@ class GoalList {
                         that.inputParentGoal.disabled = true;
 
                         for (let i = 0; i < goal.tasks.length; i++) {
-                            const tempHTML = this.renderTask(goal.tasks[i]);
+                            const tempHTML = this.renderTask(goal.tasks[i],goal);
                             that.goalTaskList.appendChild(tempHTML);
                         }
 
@@ -106,7 +105,6 @@ class GoalList {
             }
         }
     }
-
 
     get saveGoal() {
         const that = this;
@@ -138,11 +136,11 @@ class GoalList {
         let body = {
             "Name": name,
             "Description": description,
-            "ParentGoalId": parentGoalId
+            "ParentGoalId": parentGoalId == "" ? null : parentGoalId
         }
         return ougFetch('/api/Goal', 'POST', body)
             .then(result => {
-                alert(JSON.stringify(result));
+                alert("Done");
                 return result;
             });;
     }
@@ -161,7 +159,7 @@ class GoalList {
         }
         return ougFetch('/api/Goal/'+id, 'PATCH', body)
             .then(result => {
-                alert(JSON.stringify(result));
+                alert("Done");
                 return result;
             });;
     }
@@ -172,11 +170,12 @@ class GoalList {
     }
 
     refresh() {
-        ougFetch('/Planning/GoalList', 'GET')
-            .then(html => {
-                document.getElementById('goal_container').innerHTML = html;
-                this.init();
-            });
+        location.reload();
+        //ougFetch('/Planning/GoalList', 'GET')
+        //    .then(html => {
+        //        document.getElementById('goal_container').innerHTML = html;
+        //        this.init();
+        //    });
     }
 
     //#endregion
@@ -184,7 +183,7 @@ class GoalList {
     //#endregion
 
     //#region utils
-    renderTask(task) {
+    renderTask(task,goal) {
         const template = document.getElementById('task-template');
         const clone = template.content.cloneNode(true);
 
@@ -192,7 +191,7 @@ class GoalList {
         li.dataset.taskid = task.id;
 
         clone.querySelector('.task-name').textContent = task.name;
-        clone.querySelector('.task-goal-name').textContent = task.goal.name;
+        clone.querySelector('.task-goal-name').textContent = goal?.name;
         clone.querySelector('.task-description').textContent = task.description;
 
         // Mostrar el tipo correspondiente

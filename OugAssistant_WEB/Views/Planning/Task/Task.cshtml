@@ -1,6 +1,7 @@
-﻿	@model OugAssistant_WEB.Models.Planning.PlanningViewModel
+﻿@model OugAssistant_WEB.Models.Planning.PlanningViewModel
 
 @await Html.PartialAsync("Task/_taskList", Model)
 @await Html.PartialAsync("Task/_taskModal", Model)
 
 <script src="~/js/Planning/task.js"></script>
+<script src="~/lib/luxon/luxon.min.js"></script>
