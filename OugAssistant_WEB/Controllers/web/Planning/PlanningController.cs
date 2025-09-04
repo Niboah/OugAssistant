@@ -38,7 +38,6 @@ public class PlanningController : Controller
         _logger.LogInformation("PlanningController TaskList");
         PlanningViewModel taskViewModel = new PlanningViewModel();
         taskViewModel.TaskList = await _taskServices.GetAllOugTaskAsync();
-        taskViewModel.GoalList = await _goalServices.GetAllOugGoalAsync();
         return PartialView("Task/Task", taskViewModel);
     }
 
@@ -46,7 +45,6 @@ public class PlanningController : Controller
     {
         _logger.LogInformation("PlanningController GoalList");
         PlanningViewModel goalViewModel = new PlanningViewModel();
-        goalViewModel.TaskList = await _taskServices.GetAllOugTaskAsync();
         goalViewModel.GoalList = await _goalServices.GetAllOugGoalAsync();
         return PartialView("Goal/Goal", goalViewModel);
     }

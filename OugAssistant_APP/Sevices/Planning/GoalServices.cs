@@ -18,7 +18,23 @@ namespace OugAssistant_APP.Sevices.Planning
             try
             {
                 var goals = await this._db.GetOugGoalAsync();
-                return goals.OrderBy(g => g.Tasks.Count()).ThenBy(g=>g.Childs.Count()).ThenByDescending(g=>g.Level).Select(g => new GoalAPIout(g));
+                var goalWithChildCounts = new List<(OugGoal goal, int childCount)>();
+
+                foreach (var g in goals)
+                {
+                    //int count = await this._db.CountGoalChilds(g.Id); 
+                    int countTask =  await this._db.CountGoalChildsTasks(g.Id);
+                    goalWithChildCounts.Add((g, countTask));
+                }
+
+                var orderedGoals = goalWithChildCounts
+                    .OrderBy(x => x.goal.Tasks.Count + x.childCount  == 0 ? 0 : 1)
+                    .ThenByDescending(x => x.goal.Level)
+                    .ThenBy(x => x.childCount)
+                    .Select(x => new GoalAPIout(x.goal))
+                    .ToList();
+
+                return orderedGoals;
             }
             catch (Exception ex)
             {

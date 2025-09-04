@@ -71,7 +71,12 @@ class TaskModal {
                     this.inputTaskName.disabled = true;
                     this.inputTaskDescription.value = task.description;
                     this.inputTaskPriority.value = task.priority;
-                    this.selectTaskGoal.value = task.goal?.id;
+
+                    task.goalList.forEach(value => {
+                        const option = this.selectTaskGoal.querySelector(`option[value="${value.id}"]`);
+                        if (option) option.selected = true;
+                    });
+
                     this.selectTaskGoal.disabled = true;
                     this.selectParentTask.value = task.parentTask?.id;
                     this.selectParentTask.disabled = true;
@@ -133,7 +138,7 @@ class TaskModal {
                 let name = that.inputTaskName.value;
                 let description = that.inputTaskDescription.value;
                 let priority = Number(that.inputTaskPriority.value);
-                let goalId = that.selectTaskGoal.value;
+                let goalIdList = Array.from(that.selectTaskGoal.selectedOptions).map(x => x.value);
                 let parentTaskId = that.selectParentTask.value;
 
                 let type = document.querySelector('.taskType.active').dataset.tasktype;
@@ -165,7 +170,7 @@ class TaskModal {
 
                     }
                     );
-                    await that.updateTask(that.selectedTaskId, name, description, priority, goalId, type, parentTaskId, eventDateTime, place, deadtime, routines)
+                    await that.updateTask(that.selectedTaskId, name, description, priority, goalIdList, type, parentTaskId, eventDateTime, place, deadtime, routines)
 
                     //#endregion
 
@@ -190,7 +195,7 @@ class TaskModal {
 
                     });
 
-                    await that.createTask(name, description, priority, goalId, type, parentTaskId, eventDateTime, place, deadtime, routines)
+                    await that.createTask(name, description, priority, goalIdList, type, parentTaskId, eventDateTime, place, deadtime, routines)
 
                     //#endregion
 
@@ -204,13 +209,13 @@ class TaskModal {
 
     }
 
-    createTask(name, description, priority, goalId, type, parentTaskId, eventDateTime, place, deadtime, routines) {
+    createTask(name, description, priority, goalIdList, type, parentTaskId, eventDateTime, place, deadtime, routines) {
 
         let body = {
             "Name": name,
             "Description": description,
             "Priority": priority,
-            "GoalIdList": [goalId],
+            "GoalIdList": goalIdList,
             "Type": type,
         }
         body.ParentTaskId = parentTaskId ? parentTaskId : null;
@@ -226,13 +231,13 @@ class TaskModal {
             }).catch(ex => alert(ex));;
     }
 
-    updateTask(id, name, description, priority, goalId, type, parentTaskId, eventDateTime, place, deadtime, routines) {
+    updateTask(id, name, description, priority, goalIdList, type, parentTaskId, eventDateTime, place, deadtime, routines) {
         let body = {
             "Id": id,
             "Name": name,
             "Description": description,
             "Priority": priority,
-            "GoalIdList": [goalId],
+            "GoalIdList": goalIdList,
             "Type": type,
         }
         body.ParentTaskId = parentTaskId ? parentTaskId : null;

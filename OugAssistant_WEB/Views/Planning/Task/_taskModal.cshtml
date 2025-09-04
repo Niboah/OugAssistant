@@ -37,14 +37,15 @@
 					<!--Goal-->
 					<div class="col-4">
 						<div class="form-floating">
-							<select class="form-select form-select-lg" id="selectTaskGoal" aria-label="Goal" placeholder="Choose">
+							<label for="selectTaskGoal">Goal</label>
+							<select class="form-select form-select-lg" id="selectTaskGoal" aria-label="Goal" placeholder="Choose" multiple>
 								<option selected value=""></option>
 								@foreach (var goal in Model.GoalList)
 								{
 									<option value="@(goal.Id)">@(goal.Name)</option>
 								}
 							</select>
-							<label for="selectTaskGoal">Goal</label>
+							
 						</div>
 					</div>
 				</div>

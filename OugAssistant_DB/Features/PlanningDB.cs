@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using OugAssistant.Features.Planning.Model;
 using OugAssistant_APP.Interfaces.IPlanningBD;
@@ -112,13 +113,27 @@ public class PlanningDB : IPlanningDB
     #region OugTask
 
     public async Task<ICollection<OugTask>> GetOugTaskAsync()
-        => await _context.OugTasks.ToListAsync();
+        => await _context.OugTasks
+                            .Include(t => t.Parent)
+                            .Include(t => t.Childs)
+                            .Include(t => t.Goals)
+                            .ToListAsync();
 
     public async Task<ICollection<OugTask>> GetOugTaskAsync(ICollection<Guid> idList)
-        => await _context.OugTasks.Where(t => idList.Contains(t.Id)).ToListAsync();
+        => await _context.OugTasks
+                            .Include(t => t.Parent)
+                            .Include(t => t.Childs)
+                            .Include(t => t.Goals)
+                            .Where(t => idList.Contains(t.Id))
+                            .ToListAsync();
 
     public async Task<OugTask?> GetOugTaskByIdAsync(Guid id)
-        => await _context.OugTasks.FindAsync(id);
+        => await _context.OugTasks
+                            .Include(t => t.Parent)
+                            .Include(t => t.Childs)
+                            .Include(t => t.Goals)
+                            .Where(t=>t.Id==id)
+                            .FirstOrDefaultAsync();
 
     public async Task<bool> AddOugTaskAsync(OugTask item)
     {
@@ -184,15 +199,28 @@ public class PlanningDB : IPlanningDB
 
     #region OugGoal
 
-    public async Task<ICollection<OugGoal>> GetOugGoalAsync()
-        => await _context.OugGoal.ToListAsync();
+        public async Task<ICollection<OugGoal>> GetOugGoalAsync()
+            => await _context.OugGoal
+                                .Include(g=>g.Tasks)
+                                .Include(g => g.Parent)
+                                .Include(g => g.Childs)
+                                .ToListAsync();
 
     public async Task<ICollection<OugGoal>> GetOugGoalAsync(ICollection<Guid> idList)
-        => await _context.OugGoal.Where(g => idList.Contains(g.Id)).ToListAsync();
+        => await _context.OugGoal
+                            .Include(g => g.Tasks)
+                            .Include(g => g.Parent)
+                            .Include(g => g.Childs)
+                            .Where(g => idList.Contains(g.Id))
+                            .ToListAsync();
 
     public async Task<OugGoal?> GetOugGoalByIdAsync(Guid id)
-        => await _context.OugGoal.FindAsync(id);
-
+        => await _context.OugGoal
+                            .Include(g => g.Tasks)
+                            .Include(g => g.Parent)
+                            .Include(g => g.Childs)
+                            .Where(g=>g.Id==id)
+                            .FirstOrDefaultAsync();
     public async Task<bool> AddOugGoalAsync(OugGoal item)
     {
         await _context.OugGoal.AddAsync(item);
@@ -233,6 +261,64 @@ public class PlanningDB : IPlanningDB
 
         _context.OugGoal.RemoveRange(entities);
         return await _context.SaveChangesAsync() > 0;
+    }
+
+    public async Task<int> CountGoalChilds(Guid id)
+    {
+        var sql = @"
+            WITH RecursiveGoals AS
+            (
+                SELECT Id, ParentId
+                FROM OugGoal
+                WHERE Id = @GoalId
+                UNION ALL
+                SELECT g.Id, g.ParentId
+                FROM OugGoal g
+                INNER JOIN RecursiveGoals rg ON g.ParentId = rg.Id
+            )
+            SELECT COUNT(*) - 1 FROM RecursiveGoals"; // -1 para no contar el root
+
+        var param = new SqlParameter("@GoalId", id);
+
+        // Abre la conexión manualmente y ejecuta la consulta
+        await using var command = _context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = sql;
+        command.Parameters.Add(param);
+
+        await _context.Database.OpenConnectionAsync();
+
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result);
+    }
+
+    public async Task<int> CountGoalChildsTasks(Guid id)
+    {
+        var sql = @"WITH RecursiveGoals AS
+        (
+            SELECT Id,  Name, ParentId
+            FROM OugGoal
+            WHERE Id = @GoalId
+            UNION ALL
+            SELECT g.Id, g.Name, g.ParentId
+            FROM OugGoal g
+            INNER JOIN RecursiveGoals rg ON g.ParentId = rg.Id
+        )
+        SELECT COUNT(task.Id)
+        FROM RecursiveGoals rg
+        LEFT JOIN OugTaskGoal link ON rg.Id = link.GoalId
+        LEFT JOIN OugTasks task ON link.TaskId = task.Id;";
+
+        var param = new SqlParameter("@GoalId", id);
+
+        // Abre la conexión manualmente y ejecuta la consulta
+        await using var command = _context.Database.GetDbConnection().CreateCommand();
+        command.CommandText = sql;
+        command.Parameters.Add(param);
+
+        await _context.Database.OpenConnectionAsync();
+
+        var result = await command.ExecuteScalarAsync();
+        return Convert.ToInt32(result);
     }
     #endregion
 }

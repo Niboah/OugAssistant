@@ -28,6 +28,8 @@ namespace OugAssistant_APP.Interfaces.IPlanningBD
         Task<bool> UpdateOugGoalAsync(ICollection<OugGoal> itemList);
         Task<bool> DeleteOugGoalAsync(Guid id);
         Task<bool> DeleteOugGoalAsync(ICollection<Guid> idList);
+        Task<int> CountGoalChilds(Guid id);
+        Task<int> CountGoalChildsTasks(Guid id);
         #endregion
     }
 }

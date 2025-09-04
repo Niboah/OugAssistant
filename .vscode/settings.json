@@ -1,0 +1,5 @@
+{
+  "csharp2plantuml.inputPath": ".",      // carpeta con tu código C#
+  "csharp2plantuml.outputPath": "diagrams",// carpeta donde se guardan los .puml
+  "csharp2plantuml.public": true           // solo clases públicas
+}

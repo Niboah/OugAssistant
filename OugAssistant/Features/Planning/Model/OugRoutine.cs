@@ -1,13 +1,15 @@
 ﻿
+using System.Globalization;
+
 namespace OugAssistant.Features.Planning.Model;
 
 public class OugRoutine : OugTask
 {
     public int RoutineDays { get; set; }
-    public HashSet<TimeOnly>[] Routines { get; set; }
+    public HashSet<TimeOnly>[] Routines { get; set; }  
     public DateTime? LastFinished { get; set; }
     public OugRoutine() { }
-    public OugRoutine(string name, string? description, TaskPriority priority, OugTask? parentTask, ICollection<OugGoal> goalList, HashSet<TimeOnly>[] routines): base(name, description, priority, parentTask, goalList)
+    public OugRoutine(string name, string? description, TaskPriority priority, OugTask? parentTask, ICollection<OugGoal> goalList, HashSet<TimeOnly>[] routines) : base(name, description, priority, parentTask, goalList)
     {
         Routines = routines;
         RoutineDays = routines.Length;
@@ -26,7 +28,7 @@ public class OugRoutine : OugTask
 
     public override bool Finish()
     {
-        LastFinished = DateTime.Now;
+        LastFinished = this.RoutineDateTime();
         return true;
     }
 
@@ -45,37 +47,44 @@ public class OugRoutine : OugTask
 
     private DateTime CalcNextRoutineDateTime(DateTime now)
     {
-        DateTime nextDateTime = now;
-        int nowDayOfWeek = now.DayOfWeek == 0 ? 7 : (int)now.DayOfWeek; //Change Sunday to 7
+        int ciclo = Routines.Length;
+        if (ciclo == 0) throw new ArgumentException("La matriz debe tener al menos un día.");
 
-        var weekTimesOrdered = Routines.Select((set, index) => new { Index = index+1, Set = set })
-                 .Where(x => x.Set != null && x.Set.Count > 0)
-                 .OrderBy(x => (x.Index - nowDayOfWeek + 7) % 7)
-                 .FirstOrDefault();
+        // Total de días transcurridos desde startDate
+        int diasTranscurridos = (int)Math.Floor((now.Date - CreatedDateTime.Date).TotalDays);
 
-        TimeOnly timeDay = weekTimesOrdered.Set.FirstOrDefault();
-        int weekDay = weekTimesOrdered.Index;
+        // Índice dentro del ciclo
+        int diaIndice = diasTranscurridos % ciclo;
+        int diaOffset = diasTranscurridos - diaIndice; // días enteros de ciclos completos
 
-        if (weekDay == null || timeDay == null)
+        // Buscamos a partir del día actual en el ciclo
+        for (int i = 0; i < ciclo; i++)
         {
-            throw new Exception();
+            int indiceActual = (diaIndice + i) % ciclo;
+            DateTime fechaDia = CreatedDateTime.Date.AddDays(diaOffset + i);
+
+            foreach (var hora in Routines[indiceActual])
+            {
+                DateTime candidato = fechaDia.Add(hora.ToTimeSpan());
+                if (candidato > now)
+                    return candidato;
+            }
         }
 
-        int daysToAdd = ((int)weekDay - (int)nowDayOfWeek + 7) % 7;
-        if (daysToAdd == 0)
-            daysToAdd = 7; // Opcional: si quieres saltar al mismo día *la próxima semana*
-
-        nextDateTime = nextDateTime.Date.AddDays(daysToAdd);
-
-        if (timeDay >= TimeOnly.FromTimeSpan(now.TimeOfDay))
-        { //Today
-            nextDateTime = DateTime.Today + timeDay.ToTimeSpan();
+        // Si llegamos aquí, el siguiente horario está en el siguiente ciclo completo
+        DateTime proximoCiclo = CreatedDateTime.Date.AddDays(diaOffset + ciclo);
+        for (int i = 0; i < ciclo; i++)
+        {
+            foreach (var hora in Routines[i])
+            {
+                DateTime candidato = proximoCiclo.Add(hora.ToTimeSpan());
+                if (candidato > now)
+                    return candidato;
+            }
         }
-        else
-        { // Other day
-            nextDateTime = DateTime.Today.AddDays(1) + timeDay.ToTimeSpan();
-        }
-        return nextDateTime;
+
+        throw new InvalidOperationException("No se pudo encontrar un horario válido. (" + Name + ")");
+
     }
 
 
